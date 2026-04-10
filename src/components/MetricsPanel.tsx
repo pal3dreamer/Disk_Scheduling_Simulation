@@ -4,6 +4,70 @@ import { useSimulation } from './SimulationProvider';
 type SortColumn = 'id' | 'track' | 'arrival' | 'start' | 'complete' | 'waitTime' | 'serviceTime';
 type SortDirection = 'asc' | 'desc';
 
+export const AggregateStats: React.FC = () => {
+  const { state } = useSimulation();
+
+  // Calculate aggregate metrics
+  const totalRequests = state.completedRequests.length;
+  const totalSeekTime = state.completedRequests.reduce((sum, req) => {
+    const waitTime = (req.startTime || 0) - req.arrivalTime;
+    return sum + waitTime;
+  }, 0);
+
+  const avgWaitTime = totalRequests > 0 ? totalSeekTime / totalRequests : 0;
+
+  const totalSimulationTime = state.currentTime;
+  const throughput = totalSimulationTime > 0 ? totalRequests / totalSimulationTime : 0;
+
+  const StatCard: React.FC<{
+    title: string;
+    value: string | number;
+    unit?: string;
+    testId: string;
+  }> = ({ title, value, unit = '', testId }) => (
+    <div data-testid={testId} className="card-accent p-4 flex flex-col space-y-2">
+      <h4 className="text-xs text-gray-400 uppercase tracking-wide font-medium">
+        {title}
+      </h4>
+      <p className="text-2xl font-mono text-amber-400 font-bold">
+        <span data-testid={`${testId}-value`}>{value}</span>
+        {unit && <span className="text-sm ml-1">{unit}</span>}
+      </p>
+    </div>
+  );
+
+  return (
+    <div
+      data-testid="aggregate-stats-container"
+      className="grid grid-cols-2 gap-4 md:grid-cols-4"
+    >
+      <StatCard
+        title="Total Seek Time"
+        value={totalSeekTime.toFixed(1)}
+        unit="ms"
+        testId="stat-total-seek-time"
+      />
+      <StatCard
+        title="Avg Wait Time"
+        value={avgWaitTime.toFixed(1)}
+        unit="ms"
+        testId="stat-avg-wait-time"
+      />
+      <StatCard
+        title="Total Requests"
+        value={totalRequests}
+        testId="stat-total-requests"
+      />
+      <StatCard
+        title="Throughput"
+        value={throughput.toFixed(3)}
+        unit="req/ms"
+        testId="stat-throughput"
+      />
+    </div>
+  );
+};
+
 export const PerRequestMetrics: React.FC = () => {
   const { state } = useSimulation();
   const [sortColumn, setSortColumn] = useState<SortColumn>('id');
@@ -180,8 +244,6 @@ export const PerRequestMetrics: React.FC = () => {
     </div>
   );
 };
-
-export const AggregateStats: React.FC = () => <div data-testid="aggregate-stats" />;
 
 export const MetricsPanel: React.FC = () => {
   return (

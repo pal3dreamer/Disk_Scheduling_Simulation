@@ -23,7 +23,7 @@ describe('MetricsPanel', () => {
       </SimulationProvider>
     );
 
-    expect(screen.getByTestId('aggregate-stats')).toBeInTheDocument();
+    expect(screen.getByTestId('aggregate-stats-container')).toBeInTheDocument();
   });
 
   it('renders per-request metrics section', () => {
