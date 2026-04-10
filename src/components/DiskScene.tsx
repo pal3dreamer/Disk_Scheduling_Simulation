@@ -4,6 +4,7 @@ import { useSimulation } from './SimulationProvider'
 import { DiskGeometry } from './DiskGeometry'
 import { DiskArmGeometry } from './DiskArmGeometry'
 import type { DiskSceneHandle, DiskSceneProps } from '../types/diskScene'
+import { AnimationController } from '../utils/animationController'
 
 /**
  * Internal Three.js scene setup component
@@ -84,62 +85,77 @@ export const DiskScene = forwardRef<DiskSceneHandle, DiskSceneProps>(
   ) {
     const { engine } = useSimulation()
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const controllerRef = useRef(new AnimationController())
 
     // Imperative handle for parent-controlled animations
     useImperativeHandle(
       ref,
       () => ({
         async animateHeadMovement(
-          // @ts-ignore - parameters will be used in Task 25
           fromTrack: number,
-          // @ts-ignore
           toTrack: number,
           durationMs: number
         ): Promise<void> {
-          // Stub: actual animation logic in Task 25
-          // Parameters: fromTrack, toTrack, durationMs
-          await new Promise((resolve) => setTimeout(resolve, durationMs))
+          // Get arm group ref from DiskArmGeometry (will be passed via ref in Step 3)
+          // For now, this is a stub that will be connected in integration
+          await controllerRef.current.animateHeadMovement(
+            { position: { z: 0 } } as any, // Placeholder
+            fromTrack,
+            toTrack,
+            durationMs
+          )
         },
 
         async animatePlatterRotation(
-          // @ts-ignore - parameter will be used in Task 25
           angle: number,
           durationMs: number
         ): Promise<void> {
-          // Stub: actual animation logic in Task 25
-          // Parameters: angle, durationMs
-          await new Promise((resolve) => setTimeout(resolve, durationMs))
+          // Get platter group ref from DiskGeometry (will be passed via ref in Step 3)
+          // For now, this is a stub that will be connected in integration
+          await controllerRef.current.animatePlatterRotation(
+            { rotation: { y: 0 } } as any, // Placeholder
+            0,
+            angle,
+            durationMs
+          )
         },
 
         reset(): void {
-          // Stub: reset logic in Task 25
+          controllerRef.current.reset()
         },
       }),
       []
     )
 
-    // Subscribe to engine events for animation coordination
+    // Cleanup on unmount
+    useEffect(() => {
+      return () => {
+        controllerRef.current.cleanup()
+      }
+    }, [])
+
+    // Subscribe to engine events for animation coordination (for future integration)
     useEffect(() => {
       const eventBus = engine.getEventBus()
 
       // HEAD_MOVED event: triggers head animation
-      // @ts-ignore - event will be used in Task 25
+      // @ts-ignore - event will be used in full integration
       const unsubscribeHeadMoved = eventBus.on('HEAD_MOVED', (event) => {
         // Event payload: { from, to, distance, duration }
-        // Animation will be triggered by handle method (Task 25)
+        // Animation will be triggered by handle method
       })
 
       // PLATTER_ROTATED event: triggers platter animation
-      // @ts-ignore - event will be used in Task 25
+      // @ts-ignore - event will be used in full integration
       const unsubscribePlatterRotated = eventBus.on('PLATTER_ROTATED', (event) => {
         // Event payload: { angle, duration }
-        // Animation will be triggered by handle method (Task 25)
+        // Animation will be triggered by handle method
       })
 
       // REQUEST_COMPLETED event: visual feedback
       const unsubscribeRequestCompleted = eventBus.on(
         'REQUEST_COMPLETED',
-        // @ts-ignore - event will be used in Task 25
+        // @ts-ignore - event will be used in full integration
         (event) => {
           // Event payload: { request }
           // Could highlight completed request in visualization
