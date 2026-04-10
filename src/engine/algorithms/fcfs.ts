@@ -1,7 +1,7 @@
 import type { DiskAlgorithm, SimulationState, Request } from '@/engine/types'
 
 export class FCFSAlgorithm implements DiskAlgorithm {
-  selectNext(queue: Request[], state: SimulationState): Request | null {
+  selectNext(queue: Request[], _state: SimulationState): Request | null {
     return queue.length > 0 ? queue[0] : null
   }
 

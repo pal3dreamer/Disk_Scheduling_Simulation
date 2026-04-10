@@ -3,7 +3,7 @@ import { getAlgorithm } from './algorithmFactory'
 import { calculateSeekTime, calculateRotationalLatency } from '@/utils/physics'
 import type { SimulationState, Request, SimulationEvent, EventType, Algorithm } from './types'
 
-interface EngineConfig {
+export interface EngineConfig {
   algorithm: Algorithm
   diskSize: number
   trackSeekTime: number
@@ -35,6 +35,10 @@ export class SimulationEngine {
 
   getState(): SimulationState {
     return { ...this.state }
+  }
+
+  getEventBus(): EventBus {
+    return this.eventBus
   }
 
   queueRequest(request: Request): void {
