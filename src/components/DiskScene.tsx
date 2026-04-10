@@ -1,6 +1,7 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useSimulation } from './SimulationProvider'
+import { DiskGeometry } from './DiskGeometry'
 import type { DiskSceneHandle, DiskSceneProps } from '../types/diskScene'
 
 /**
@@ -51,11 +52,10 @@ function SceneContent() {
       {/* Fog: linear ramp 500-2000 units, color matches secondary UI (#1a1f3a) */}
       <fog attach="fog" args={[0x1a1f3a, 500, 2000]} />
 
-      {/* Placeholder for child geometries (Platter, Arm) - Tasks 23-24 */}
-      <group>
-        {/* Platter geometry will be inserted here (Task 23) */}
-        {/* Arm geometry will be inserted here (Task 24) */}
-      </group>
+      {/* Disk Platter & Spindle Hub (Task 23) */}
+      <DiskGeometry diskSize={500} showTrackDetail={true} />
+
+      {/* Arm geometry will be inserted here (Task 24) */}
     </>
   )
 }
