@@ -33,7 +33,8 @@ describe('MetricsPanel', () => {
       </SimulationProvider>
     );
 
-    expect(screen.getByTestId('per-request-metrics')).toBeInTheDocument();
+    // PerRequestMetrics will show empty state when no requests
+    expect(screen.getByText('No requests completed yet')).toBeInTheDocument();
   });
 
   it('displays metrics header', () => {
