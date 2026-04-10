@@ -1,4 +1,4 @@
-import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
+import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useSimulation } from './SimulationProvider'
 import { DiskGeometry } from './DiskGeometry'
@@ -201,3 +201,5 @@ export const DiskScene = forwardRef<DiskSceneHandle, DiskSceneProps>(
 )
 
 DiskScene.displayName = 'DiskScene'
+
+export default React.memo(DiskScene)

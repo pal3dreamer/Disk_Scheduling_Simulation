@@ -246,6 +246,9 @@ export const PerRequestMetrics: React.FC = () => {
 };
 
 export const MetricsPanel: React.FC = () => {
+  const MemoAggregateStats = React.memo(AggregateStats)
+  const MemoPerRequestMetrics = React.memo(PerRequestMetrics)
+
   return (
     <div
       data-testid="metrics-panel-container"
@@ -256,8 +259,8 @@ export const MetricsPanel: React.FC = () => {
           Simulation Metrics
         </h2>
 
-        <AggregateStats />
-        <PerRequestMetrics />
+        <MemoAggregateStats />
+        <MemoPerRequestMetrics />
       </div>
     </div>
   );
