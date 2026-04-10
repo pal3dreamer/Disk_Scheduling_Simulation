@@ -242,7 +242,54 @@ export const PlaybackControls: React.FC = () => {
     </div>
   );
 };
-export const QueueMonitor: React.FC = () => <div data-testid="queue-monitor" />;
+export const QueueMonitor: React.FC = () => {
+  const { state } = useSimulation();
+
+  return (
+    <div data-testid="queue-monitor-container" className="card-accent p-4 grid grid-cols-2 gap-4">
+      {/* Pending Queue */}
+      <div className="flex flex-col space-y-3">
+        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
+          Pending Requests
+        </h3>
+        <div data-testid="pending-queue-list" className="flex flex-col space-y-2 max-h-48 overflow-y-auto">
+          {state.requestQueue.length === 0 ? (
+            <p className="text-xs text-gray-500 italic">Queue empty</p>
+          ) : (
+            state.requestQueue.map((req) => (
+              <div
+                key={req.id}
+                data-testid={`queue-item-${req.id}`}
+                className="px-3 py-2 bg-gray-800 border-l-2 border-amber-500 text-gray-300 text-xs font-mono"
+              >
+                <div>Track: {req.track}</div>
+                <div className="text-gray-500">ID: {req.id}</div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Active Request */}
+      <div className="flex flex-col space-y-3">
+        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
+          Active Request
+        </h3>
+        <div data-testid="active-request-display" className="px-3 py-4 bg-gray-800 border-l-2 border-green-500">
+          {state.activeRequest ? (
+            <div className="text-xs font-mono space-y-1">
+              <div className="text-green-400 font-bold">ACTIVE</div>
+              <div className="text-gray-300">Track: {state.activeRequest.track}</div>
+              <div className="text-gray-500">ID: {state.activeRequest.id}</div>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 italic">None</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const ControlPanel: React.FC = () => {
   return (

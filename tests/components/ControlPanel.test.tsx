@@ -53,7 +53,7 @@ describe('ControlPanel', () => {
       </SimulationProvider>
     );
 
-    expect(screen.getByTestId('queue-monitor')).toBeInTheDocument();
+    expect(screen.getByTestId('queue-monitor-container')).toBeInTheDocument();
   });
 
   it('applies industrial styling classes', () => {
