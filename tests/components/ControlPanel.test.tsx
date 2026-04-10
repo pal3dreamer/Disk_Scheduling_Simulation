@@ -23,7 +23,7 @@ describe('ControlPanel', () => {
       </SimulationProvider>
     );
 
-    expect(screen.getByTestId('algorithm-selector')).toBeInTheDocument();
+    expect(screen.getByTestId('algorithm-selector-container')).toBeInTheDocument();
   });
 
   it('renders disk configuration section', () => {

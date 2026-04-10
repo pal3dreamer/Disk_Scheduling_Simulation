@@ -50,6 +50,7 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({
       'REQUEST_COMPLETED',
       'REQUEST_STARTED',
       'PLATTER_ROTATED',
+      'ALGORITHM_CHANGED',
     ];
 
     const unsubscribers = eventTypes.map((eventType) => eventBus.on(eventType, handleStateChange));
