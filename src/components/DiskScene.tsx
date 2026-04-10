@@ -2,6 +2,7 @@ import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { useSimulation } from './SimulationProvider'
 import { DiskGeometry } from './DiskGeometry'
+import { DiskArmGeometry } from './DiskArmGeometry'
 import type { DiskSceneHandle, DiskSceneProps } from '../types/diskScene'
 
 /**
@@ -55,7 +56,8 @@ function SceneContent() {
       {/* Disk Platter & Spindle Hub (Task 23) */}
       <DiskGeometry diskSize={500} showTrackDetail={true} />
 
-      {/* Arm geometry will be inserted here (Task 24) */}
+      {/* Mechanical Arm & Read Head (Task 24) */}
+      <DiskArmGeometry diskSize={500} trackSeekTime={0.1} />
     </>
   )
 }
