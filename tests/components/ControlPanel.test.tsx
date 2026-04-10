@@ -43,7 +43,7 @@ describe('ControlPanel', () => {
       </SimulationProvider>
     );
 
-    expect(screen.getByTestId('playback-controls')).toBeInTheDocument();
+    expect(screen.getByTestId('playback-controls-container')).toBeInTheDocument();
   });
 
   it('renders queue monitor section', () => {
