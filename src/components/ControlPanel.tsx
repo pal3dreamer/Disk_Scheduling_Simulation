@@ -72,7 +72,85 @@ export const AlgorithmSelector: React.FC = () => {
   );
 };
 
-export const DiskConfig: React.FC = () => <div data-testid="disk-config" />;
+export const DiskConfig: React.FC = () => {
+  const { state } = useSimulation();
+
+  return (
+    <div data-testid="disk-config-container" className="card-accent p-4">
+      <div className="flex flex-col space-y-4">
+        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
+          Disk Configuration
+        </h3>
+
+        {/* Disk Size Slider */}
+        <div className="flex flex-col space-y-2">
+          <div className="flex justify-between items-center">
+            <label className="text-xs text-gray-300 font-medium">Disk Size (tracks)</label>
+            <span data-testid="disk-size-value" className="text-xs font-mono text-amber-400">
+              {state.diskSize}
+            </span>
+          </div>
+          <input
+            data-testid="disk-size-slider"
+            type="range"
+            min="100"
+            max="500"
+            value={state.diskSize}
+            onChange={() => {}} // Disabled - config immutable
+            className="w-full cursor-pointer"
+            disabled
+          />
+        </div>
+
+        {/* RPM Slider */}
+        <div className="flex flex-col space-y-2">
+          <div className="flex justify-between items-center">
+            <label className="text-xs text-gray-300 font-medium">Platter RPM</label>
+            <span data-testid="rpm-value" className="text-xs font-mono text-amber-400">
+              {state.platterRPM}
+            </span>
+          </div>
+          <input
+            data-testid="rpm-slider"
+            type="range"
+            min="3600"
+            max="15000"
+            step="600"
+            value={state.platterRPM}
+            onChange={() => {}} // Disabled - config immutable
+            className="w-full cursor-pointer"
+            disabled
+          />
+        </div>
+
+        {/* Seek Time Slider */}
+        <div className="flex flex-col space-y-2">
+          <div className="flex justify-between items-center">
+            <label className="text-xs text-gray-300 font-medium">Seek Time (ms/track)</label>
+            <span data-testid="seek-time-value" className="text-xs font-mono text-amber-400">
+              {state.trackSeekTime.toFixed(2)}
+            </span>
+          </div>
+          <input
+            data-testid="seek-time-slider"
+            type="range"
+            min="0.05"
+            max="0.5"
+            step="0.05"
+            value={state.trackSeekTime}
+            onChange={() => {}} // Disabled - config immutable
+            className="w-full cursor-pointer"
+            disabled
+          />
+        </div>
+
+        <p className="text-xs text-gray-500 italic">
+          Configuration is immutable after simulation starts. Reset to change parameters.
+        </p>
+      </div>
+    </div>
+  );
+};
 export const PlaybackControls: React.FC = () => <div data-testid="playback-controls" />;
 export const QueueMonitor: React.FC = () => <div data-testid="queue-monitor" />;
 

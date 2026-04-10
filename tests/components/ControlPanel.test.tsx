@@ -33,7 +33,7 @@ describe('ControlPanel', () => {
       </SimulationProvider>
     );
 
-    expect(screen.getByTestId('disk-config')).toBeInTheDocument();
+    expect(screen.getByTestId('disk-config-container')).toBeInTheDocument();
   });
 
   it('renders playback controls section', () => {
