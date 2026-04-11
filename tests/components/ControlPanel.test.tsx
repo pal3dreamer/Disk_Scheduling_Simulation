@@ -56,6 +56,16 @@ describe('ControlPanel', () => {
     expect(screen.getByTestId('queue-monitor-container')).toBeInTheDocument();
   });
 
+  it('renders preset scenarios section', () => {
+    render(
+      <SimulationProvider>
+        <ControlPanel />
+      </SimulationProvider>
+    );
+
+    expect(screen.getByTestId('preset-scenarios-container')).toBeInTheDocument();
+  });
+
   it('applies industrial styling classes', () => {
     render(
       <SimulationProvider>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSimulation } from './SimulationProvider';
 import { Algorithm } from '@/engine/types';
+import { PresetScenarios } from './PresetScenarios';
 
 const algorithmDescriptions: Record<Algorithm, string> = {
   FCFS: 'First-Come-First-Served: processes requests in arrival order. Simple but can cause starvation.',
@@ -299,6 +300,7 @@ export const ControlPanel: React.FC = () => {
     >
       <AlgorithmSelector />
       <DiskConfig />
+      <PresetScenarios />
       <PlaybackControls />
       <QueueMonitor />
     </div>
