@@ -52,7 +52,7 @@ A production-grade web application for visualizing and simulating disk I/O sched
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/disk-scheduling-simulator.git
+git clone https://github.com/pal3dreamer/disk-scheduling-simulator.git
 cd disk-scheduling-simulator
 
 # Install dependencies
