@@ -7,6 +7,19 @@ import type { DiskSceneHandle, DiskSceneProps } from '../types/diskScene'
 import { AnimationController } from '../utils/animationController'
 
 /**
+ * Loading fallback UI for DiskScene
+ * Displays animated spinner while Three.js scene initializes
+ */
+export const DiskSceneFallback = () => (
+  <div className="flex items-center justify-center h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-2 border-amber-500 border-t-transparent mx-auto mb-4"></div>
+      <p className="text-slate-400 text-sm">Initializing visualization...</p>
+    </div>
+  </div>
+)
+
+/**
  * Internal Three.js scene setup component
  * Manages camera, lighting, and fog
  */

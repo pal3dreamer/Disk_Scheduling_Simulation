@@ -1,75 +1,37 @@
-import { useEffect, useRef } from 'react'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { SimulationProvider } from './components/SimulationProvider'
+import { DiskScene } from './components/DiskScene'
+import { ControlPanel } from './components/ControlPanel'
+import { MetricsPanel } from './components/MetricsPanel'
 
+/**
+ * Main App Component
+ * 
+ * Wraps the entire application with:
+ * - ErrorBoundary: Catches and displays React errors gracefully
+ * - SimulationProvider: Provides simulation engine and state context
+ * 
+ * Layout:
+ * - Left: 3D disk visualization (DiskScene)
+ * - Right: Control panel and metrics
+ */
 export default function App() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    // Canvas initialization will happen here
-    console.log('App mounted')
-  }, [])
-
   return (
-    <div className="split-container">
-      {/* 3D Canvas Viewport */}
-      <div className="canvas-viewport">
-        <canvas
-          ref={canvasRef}
-          id="canvas"
-          className="w-full h-full"
-        />
-      </div>
+    <ErrorBoundary>
+      <SimulationProvider>
+        <div className="split-container">
+          {/* 3D Canvas Viewport */}
+          <div className="canvas-viewport">
+            <DiskScene containerWidth={1280} containerHeight={720} />
+          </div>
 
-      {/* Control Panel */}
-      <div className="control-panel">
-        <div className="panel-section">
-          <div className="panel-header">Simulator Control</div>
-          <div className="space-y-3">
-            <button className="btn-industrial btn-industrial-primary w-full">
-              Start Simulation
-            </button>
-            <button className="btn-industrial w-full">
-              Pause
-            </button>
-            <button className="btn-industrial btn-industrial-danger w-full">
-              Reset
-            </button>
+          {/* Control Panel & Metrics */}
+          <div className="control-panel">
+            <ControlPanel />
+            <MetricsPanel />
           </div>
         </div>
-
-        <div className="panel-section">
-          <div className="panel-header">Algorithm</div>
-          <select className="input-industrial">
-            <option>FCFS</option>
-            <option>SSTF</option>
-            <option>SCAN</option>
-            <option>C-SCAN</option>
-            <option>LOOK</option>
-            <option>C-LOOK</option>
-          </select>
-        </div>
-
-        <div className="panel-section">
-          <div className="panel-header">Metrics</div>
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <div className="metric-label">Total Time</div>
-              <div className="metric-value">0.0s</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Head Moves</div>
-              <div className="metric-value">0</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Avg Wait</div>
-              <div className="metric-value">0.0ms</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Queue Size</div>
-              <div className="metric-value">0</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </SimulationProvider>
+    </ErrorBoundary>
   )
 }
