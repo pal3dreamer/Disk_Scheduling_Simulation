@@ -12,8 +12,8 @@ import { MetricsPanel } from './components/MetricsPanel'
  * - SimulationProvider: Provides simulation engine and state context
  * 
  * Layout:
- * - Left: 3D disk visualization (DiskScene)
- * - Right: Control panel and metrics
+ * - Left: 3D disk visualization (DiskScene) - responsive, fills available space
+ * - Right: Control panel and metrics (fixed 384px width)
  */
 export default function App() {
   return (
@@ -22,7 +22,7 @@ export default function App() {
         <div className="split-container">
           {/* 3D Canvas Viewport */}
           <div className="canvas-viewport">
-            <DiskScene containerWidth={1280} containerHeight={720} />
+            <DiskScene />
           </div>
 
           {/* Control Panel & Metrics */}

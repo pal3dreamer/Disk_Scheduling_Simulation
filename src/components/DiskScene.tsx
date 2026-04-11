@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
+import * as THREE from 'three'
 import { useSimulation } from './SimulationProvider'
 import { DiskGeometry } from './DiskGeometry'
 import { DiskArmGeometry } from './DiskArmGeometry'
@@ -32,29 +33,37 @@ function SceneContent() {
     const height = gl.domElement.clientHeight
     const aspectRatio = (width || 1280) / (height || 720)
 
-    // Camera setup: isometric 3/4 view (60° yaw, 30° pitch)
-    // Position: (600, 800, 600) — keeps full 500-track platter in view with padding
-    camera.position.set(600, 800, 600)
-    camera.lookAt(250, 0, 250) // Look at platter center
+    // Ensure we have a PerspectiveCamera
+    const perspCamera = camera as THREE.PerspectiveCamera
+    if (!perspCamera.fov) {
+      console.error('Expected PerspectiveCamera but got:', camera.type)
+      return
+    }
 
-    // FOV calculated to show full platter + padding at current resolution
-    camera.fov = 45
-    camera.aspect = aspectRatio
-    camera.near = 10
-    camera.far = 3000
-    camera.updateProjectionMatrix()
+    // Camera setup: isometric 3/4 view looking DOWN at disk
+    // Position camera MUCH farther back to show full disk with padding
+    // Disk platter is 500 units radius, so we need SIGNIFICANT distance
+    camera.position.set(800, 700, 800)
+    camera.lookAt(0, 0, 0) // Look at disk center (origin)
+
+    // FOV adjusted for proper framing
+    perspCamera.fov = 45
+    perspCamera.aspect = aspectRatio
+    perspCamera.near = 1
+    perspCamera.far = 5000
+    perspCamera.updateProjectionMatrix()
   }, [camera, gl])
 
   return (
     <>
-      {/* Cool key light (ambient) - cyan-blue, subtle */}
-      <ambientLight intensity={0.4} color={0x4a90e2} />
+      {/* Ambient light - bright white base */}
+      <ambientLight intensity={0.7} color={0xffffff} />
 
-      {/* Amber fill light (directional) - from top-left */}
+      {/* Key light (directional) - VERY BRIGHT white from top-left-front */}
       <directionalLight
-        intensity={0.8}
-        color={0xd4af37}
-        position={[1000, 1000, 1000]}
+        intensity={2.2}
+        color={0xffffff}
+        position={[600, 700, 600]}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -64,14 +73,28 @@ function SceneContent() {
         shadow-camera-bottom={-1000}
       />
 
-      {/* Fog: linear ramp 500-2000 units, color matches secondary UI (#1a1f3a) */}
-      <fog attach="fog" args={[0x1a1f3a, 500, 2000]} />
+      {/* Fill light (directional) - bright cyan from opposite side */}
+      <directionalLight
+        intensity={1.2}
+        color={0x00ffff}
+        position={[-500, 400, -500]}
+      />
+
+      {/* Back/rim light - BRIGHT amber from back for edge definition */}
+      <directionalLight
+        intensity={1.5}
+        color={0xffd700}
+        position={[0, 300, -800]}
+      />
+
+      {/* Fog: linear ramp 300-2000 units, color matches secondary UI (#1a1f3a) */}
+      <fog attach="fog" args={[0x1a1f3a, 300, 2000]} />
 
       {/* Disk Platter & Spindle Hub (Task 23) */}
-      <DiskGeometry diskSize={500} showTrackDetail={true} />
+      <DiskGeometry diskSize={300} showTrackDetail={true} />
 
       {/* Mechanical Arm & Read Head (Task 24) */}
-      <DiskArmGeometry diskSize={500} trackSeekTime={0.1} />
+      <DiskArmGeometry diskSize={300} trackSeekTime={0.1} />
     </>
   )
 }
@@ -89,16 +112,25 @@ function SceneContent() {
  * - Imperative animation handle
  */
 export const DiskScene = forwardRef<DiskSceneHandle, DiskSceneProps>(
-  function DiskSceneComponent(
-    {
-      containerWidth = 1280,
-      containerHeight = 720,
-    }: DiskSceneProps,
-    ref
-  ) {
+  function DiskSceneComponent(_props: DiskSceneProps, ref) {
     const { engine } = useSimulation()
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const controllerRef = useRef(new AnimationController())
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    // Update container resize handling
+    React.useEffect(() => {
+      const container = containerRef.current
+      if (!container) return
+
+      // Watch for resize
+      const observer = new ResizeObserver(() => {
+        // Canvas will automatically adjust via Three.js
+      })
+      observer.observe(container)
+
+      return () => observer.disconnect()
+    }, [])
 
     // Imperative handle for parent-controlled animations
     useImperativeHandle(
@@ -185,9 +217,10 @@ export const DiskScene = forwardRef<DiskSceneHandle, DiskSceneProps>(
 
     return (
       <div
+        ref={containerRef}
         style={{
-          width: containerWidth,
-          height: containerHeight,
+          width: '100%',
+          height: '100%',
           position: 'relative',
         }}
       >

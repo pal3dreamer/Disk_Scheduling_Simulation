@@ -1,6 +1,5 @@
 /* @ts-nocheck - r3f material type compatibility (pre-existing issue in project) */
 import React, { useEffect, useRef, useState } from 'react'
-// @ts-expect-error - Missing types for three module (pre-existing issue)
 import * as THREE from 'three'
 import { useSimulation } from './SimulationProvider'
 import {
@@ -97,12 +96,11 @@ export const DiskArmGeometry = React.memo(function DiskArmGeometry({
     <group>
       {/* ARM ASSEMBLY (pivots at origin) */}
       <group ref={armGroupRef} position={[0, 5, 0]}>
-        {/* Arm shaft (matte black cylinder) */}
+        {/* Arm shaft (matte black cylinder) - proportional to disk */}
         <mesh position={[0, 0, diskSize / 4]}>
           <cylinderGeometry args={[8, 8, diskSize / 2, 16]} />
-          {/* @ts-ignore - r3f material type issue (pre-existing) */}
           <meshStandardMaterial
-            color={0x1a1a1a}
+            color="#1a1a1a"
             metalness={0.5}
             roughness={0.8}
           />
@@ -111,9 +109,8 @@ export const DiskArmGeometry = React.memo(function DiskArmGeometry({
         {/* Arm beveled edge (slight taper) */}
         <mesh position={[0, -1, diskSize / 4]}>
           <cylinderGeometry args={[10, 8, 1, 16]} />
-          {/* @ts-ignore - r3f material type issue (pre-existing) */}
           <meshStandardMaterial
-            color={0x2a2a2a}
+            color="#2a2a2a"
             metalness={0.4}
             roughness={0.9}
           />
@@ -121,50 +118,47 @@ export const DiskArmGeometry = React.memo(function DiskArmGeometry({
 
         {/* READ HEAD ASSEMBLY */}
         <group position={[0, 0, diskSize / 2]}>
-          {/* Head body (small rectangular box) */}
+          {/* Head body (small rectangular box) - scaled */}
           <mesh position={[0, 0, 0]}>
-            <boxGeometry args={[12, 8, 6]} />
-            {/* @ts-ignore - r3f material type issue (pre-existing) */}
+            <boxGeometry args={[14, 10, 6]} />
             <meshStandardMaterial
-              color={0x1a1a1a}
+              color="#1a1a1a"
               metalness={0.5}
               roughness={0.8}
             />
           </mesh>
 
-          {/* Guide post (retractable appearance) */}
-          <mesh position={[0, -4, 0]}>
-            <cylinderGeometry args={[2, 2, 8, 8]} />
-            {/* @ts-ignore - r3f material type issue (pre-existing) */}
+          {/* Guide post (retractable appearance) - scaled */}
+          <mesh position={[0, -5, 0]}>
+            <cylinderGeometry args={[2.5, 2.5, 10, 8]} />
             <meshStandardMaterial
-              color={0x2a2a2a}
+              color="#2a2a2a"
               metalness={0.4}
               roughness={0.9}
             />
           </mesh>
 
-          {/* AMBER LED INDICATOR */}
-          <group position={[0, 5, 0]}>
+          {/* AMBER LED INDICATOR - proportional */}
+          <group position={[0, 6, 0]}>
             {/* LED sphere with emissive glow */}
             <mesh ref={ledMeshRef}>
-              <sphereGeometry args={[2.5, 16, 16]} />
-              {/* @ts-ignore - r3f material type issue (pre-existing) */}
+              <sphereGeometry args={[3, 16, 16]} />
               <meshStandardMaterial
-                color={0xd4af37}
-                emissive={0xd4af37}
-                emissiveIntensity={0.3}
-                metalness={0.2}
-                roughness={0.1}
+                color="#ffff00"
+                emissive="#ffff00"
+                emissiveIntensity={0.8}
+                metalness={0.1}
+                roughness={0.05}
               />
             </mesh>
 
-            {/* Point light for glow effect */}
+            {/* Point light for glow effect - scaled */}
             <pointLight
               ref={ledLightRef}
-              color={0xd4af37}
-              intensity={0.15}
-              distance={10}
-              decay={2}
+              color="#ffff00"
+              intensity={1.5}
+              distance={50}
+              decay={1}
             />
           </group>
         </group>

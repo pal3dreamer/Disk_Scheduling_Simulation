@@ -7,17 +7,25 @@ export type LEDState = 'idle' | 'active' | 'completed'
 /**
  * Map track number to Z-axis position on arm
  * 
- * Formula: z = (trackNumber / diskSize) * (diskSize / 2)
- * - Track 0 → Z = 0 (pivot/center)
- * - Track 250 → Z = 125 (halfway)
- * - Track 500 → Z = 250 (edge)
+ * The disk has 200 tracks (0-199)
+ * We map these to the disk radius, but CLAMP to stay within bounds
  * 
- * @param trackNumber Track position (0-diskSize)
- * @param diskSize Total disk size (e.g., 500)
- * @returns Z position in scene units
+ * Formula: z = (trackNumber / 200) * diskSize * 0.95
+ * - Track 0 → Z = 0 (pivot/center)
+ * - Track 100 → Z = diskSize * 0.475 (halfway, with 5% margin)
+ * - Track 199 → Z = diskSize * 0.9425 (near edge, with 5% margin)
+ * 
+ * The 0.95 factor ensures arm never goes past disk edge
+ * 
+ * @param trackNumber Track position (0-199)
+ * @param diskSize Total disk size (e.g., 300)
+ * @returns Z position in scene units (clamped to disk radius)
  */
 export function trackToZPosition(trackNumber: number, diskSize: number): number {
-  return (trackNumber / diskSize) * (diskSize / 2)
+  // Map track 0-199 to position 0 to (diskSize * 0.95) to stay within bounds
+  const maxTrack = 200
+  const maxPosition = diskSize * 0.95 // 95% of radius to ensure we don't exceed disk
+  return (trackNumber / maxTrack) * maxPosition
 }
 
 /**

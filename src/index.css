@@ -17,16 +17,17 @@ body {
 
 /* Split Container for 3D + Controls */
 .split-container {
-  @apply flex h-screen gap-0;
+  @apply flex h-screen w-screen gap-0 overflow-hidden;
 }
 
 .canvas-viewport {
-  @apply flex-1 bg-gradient-to-br from-slate-900 to-slate-950 relative;
+  @apply flex-1 bg-gradient-to-br from-slate-900 to-slate-950 relative overflow-hidden;
+  @apply flex items-center justify-center;
 }
 
 .control-panel {
   @apply w-96 bg-slate-900 border-l border-slate-700 overflow-y-auto;
-  @apply flex flex-col;
+  @apply flex flex-col h-screen;
 }
 
 /* Control Panel Sections */

@@ -33,7 +33,7 @@ export function generateTrackRings(diskSize: number): TrackRing[] {
     rings.push({
       trackNumber,
       radius,
-      color: '#4a4a4a', // Dark gray for all rings
+      color: '#d4af37', // Bright amber for visibility
     })
   }
 
@@ -48,11 +48,11 @@ export function generateTrackRings(diskSize: number): TrackRing[] {
 export function generateGradientZones(diskSize: number): GradientZone[] {
   const zones: GradientZone[] = []
   const zoneColors = [
-    '#2a2a2a', // Zone 1 (tracks 0-100): darkest
-    '#3a3a3a', // Zone 2 (tracks 100-200)
-    '#4a4a4a', // Zone 3 (tracks 200-300): mid
-    '#5a5a5a', // Zone 4 (tracks 300-400)
-    '#6a6a6a', // Zone 5 (tracks 400-500): lightest
+    '#0d3d66', // Zone 1 (tracks 0-100): deep blue
+    '#1a5a99', // Zone 2 (tracks 100-200): medium-deep blue
+    '#2a7fcc', // Zone 3 (tracks 200-300): bright blue
+    '#3a9dff', // Zone 4 (tracks 300-400): very bright blue
+    '#4daaff', // Zone 5 (tracks 400-500): bright cyan-blue
   ]
 
   for (let z = 0; z < 5; z++) {

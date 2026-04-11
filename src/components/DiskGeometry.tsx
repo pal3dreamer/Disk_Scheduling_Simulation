@@ -69,9 +69,9 @@ export const DiskGeometry = React.memo(function DiskGeometry({
       <mesh position={[0, 0, 0]}>
         <cylinderGeometry args={[diskSize, diskSize, 2, 64]} />
         <meshStandardMaterial
-          color={0x888888}
-          metalness={0.7}
-          roughness={0.3}
+          color="#d0d0d0"
+          metalness={0.9}
+          roughness={0.1}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -99,7 +99,7 @@ export const DiskGeometry = React.memo(function DiskGeometry({
               color={zone.color}
               side={THREE.DoubleSide}
               transparent
-              opacity={0.6}
+              opacity={0.8}
             />
           </mesh>
         ))}
@@ -110,7 +110,7 @@ export const DiskGeometry = React.memo(function DiskGeometry({
           // Create line geometry for each track ring
           const geometry = new THREE.BufferGeometry()
           const points = []
-          const segments = 64
+          const segments = 128
 
           for (let i = 0; i <= segments; i++) {
             const angle = (i / segments) * Math.PI * 2
@@ -123,40 +123,50 @@ export const DiskGeometry = React.memo(function DiskGeometry({
 
           return (
             <lineSegments key={`ring-${ring.trackNumber}`} geometry={geometry}>
-              <lineBasicMaterial color={ring.color} linewidth={2} />
+              <lineBasicMaterial color={ring.color} linewidth={3} />
             </lineSegments>
           )
         })}
 
       {/* SPINDLE HUB (decorative center hub with rotation indicator) */}
       <group position={[0, 1, 0]}>
-        {/* Hub base cylinder */}
+        {/* Hub base cylinder - scaled to disk size */}
         <mesh>
-          <cylinderGeometry args={[50, 50, 20, 32]} />
+          <cylinderGeometry args={[diskSize * 0.25, diskSize * 0.25, 30, 32]} />
           <meshStandardMaterial
-            color={0xd4af37}
+            color="#ffd700"
+            metalness={0.95}
+            roughness={0.05}
+          />
+        </mesh>
+
+        {/* Rotation indicator groove (vertical rectangle) */}
+        <mesh position={[0, 15, 0]}>
+          <boxGeometry args={[6, 18, 3]} />
+          <meshStandardMaterial
+            color="#ffaa00"
             metalness={0.9}
             roughness={0.1}
           />
         </mesh>
 
-        {/* Rotation indicator groove (vertical rectangle) */}
-        <mesh position={[0, 10, 0]}>
-          <boxGeometry args={[4, 12, 2]} />
+        {/* Beveled edge indicator (slight visual tapering) */}
+        <mesh>
+          <cylinderGeometry args={[diskSize * 0.27, diskSize * 0.25, 2, 32]} />
           <meshStandardMaterial
-            color={0xa0860f}
-            metalness={0.85}
-            roughness={0.15}
+            color="#ffff00"
+            metalness={1}
+            roughness={0.02}
           />
         </mesh>
 
-        {/* Beveled edge indicator (slight visual tapering) */}
-        <mesh>
-          <cylinderGeometry args={[52, 50, 1, 32]} />
+        {/* Outer rim for visual depth */}
+        <mesh position={[0, 12, 0]}>
+          <cylinderGeometry args={[diskSize * 0.28, diskSize * 0.28, 5, 32]} />
           <meshStandardMaterial
-            color={0xf0c040}
-            metalness={0.95}
-            roughness={0.05}
+            color="#ffaa00"
+            metalness={0.85}
+            roughness={0.15}
           />
         </mesh>
       </group>

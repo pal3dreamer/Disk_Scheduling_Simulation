@@ -132,6 +132,19 @@ export class SimulationEngine {
       }
     }
 
+    // Update platter angle based on current time and RPM
+    // 1 rotation = 360 degrees, time in seconds, RPM = rotations per minute
+    const rotationsPerSecond = this.state.platterRPM / 60
+    this.state.platterAngle = (this.state.currentTime * rotationsPerSecond * 360) % 360
+
+    // Emit platter rotation event for animation
+    this.emit({
+      type: 'PLATTER_ROTATED',
+      payload: { angle: this.state.platterAngle },
+      duration: 0,
+      timestamp: this.state.currentTime,
+    })
+
     this.state.stepCount++
 
     this.emit({

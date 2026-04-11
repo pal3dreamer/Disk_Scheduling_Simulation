@@ -157,7 +157,14 @@ export const PlaybackControls: React.FC = () => {
   const [requestTrack, setRequestTrack] = useState('');
 
   const handleNextStep = async () => {
-    await engine.step();
+    try {
+      console.log('Next Step clicked, queue length:', state.requestQueue.length, 'active:', state.activeRequest?.track);
+      await engine.step();
+      console.log('Step completed, new position:', state.headPosition);
+    } catch (error) {
+      console.error('Error during step:', error);
+      alert('Error: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
 
   const handleReset = () => {
