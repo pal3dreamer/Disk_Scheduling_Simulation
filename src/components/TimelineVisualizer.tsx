@@ -5,14 +5,36 @@ import { PlaybackControls } from './PlaybackControls';
 import { MetricsPanel } from './MetricsPanel';
 import { AlgorithmSelector } from './ControlPanel';
 import { PresetScenarios } from './PresetScenarios';
+import { scenarios } from '@/data/scenarioPresets';
 
 export const TimelineVisualizer: React.FC = () => {
-  const { engine } = useSimulation();
+  const { engine, state } = useSimulation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [metricsOpen, setMetricsOpen] = useState(true);
+  const [scenarioLoaded, setScenarioLoaded] = useState(false);
   const animationRef = useRef<NodeJS.Timeout>();
+
+  // Auto-load initial scenario on mount
+  useEffect(() => {
+    if (!scenarioLoaded && state.requestQueue.length === 0) {
+      const randomScenario = scenarios['random'];
+      if (randomScenario) {
+        randomScenario.requests.forEach((req) => {
+          const requestId = `req-${state.currentTime}-${Math.random()}`;
+          engine.queueRequest({
+            id: requestId,
+            track: req.track,
+            arrivalTime: state.currentTime,
+          });
+        });
+        setScenarioLoaded(true);
+        // Auto-play immediately
+        setIsPlaying(true);
+      }
+    }
+  }, [scenarioLoaded, state.currentTime, state.requestQueue.length, engine]);
 
   // Auto-advance simulation based on speed
   useEffect(() => {
@@ -35,6 +57,7 @@ export const TimelineVisualizer: React.FC = () => {
   const handleReset = () => {
     setIsPlaying(false);
     engine.reset();
+    setScenarioLoaded(false);
   };
 
   return (
