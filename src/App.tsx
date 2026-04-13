@@ -1,6 +1,6 @@
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { SimulationProvider } from './components/SimulationProvider'
-import { TimelineVisualizer } from './components/TimelineVisualizer'
+import { TimelineVisualizerV2 } from './components/TimelineVisualizerV2'
 
 /**
  * Main App Component
@@ -8,13 +8,13 @@ import { TimelineVisualizer } from './components/TimelineVisualizer'
  * Wraps the entire application with:
  * - ErrorBoundary: Catches and displays React errors gracefully
  * - SimulationProvider: Provides simulation engine and state context
- * - TimelineVisualizer: Main horizontal-scrolling timeline visualization
+ * - TimelineVisualizerV2: SVG-based horizontal-scrolling timeline visualization
  */
 export default function App() {
   return (
     <ErrorBoundary>
       <SimulationProvider>
-        <TimelineVisualizer />
+        <TimelineVisualizerV2 />
       </SimulationProvider>
     </ErrorBoundary>
   )
