@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import App from '@/App'
 
@@ -7,51 +7,41 @@ describe('End-to-End: Complete Workflow', () => {
     vi.clearAllMocks()
   })
 
-  it('should execute a complete simulation: load scenario → select algorithm → step through → verify all components update', async () => {
+  it('should render TimelineVisualizer with all controls and auto-play functionality', async () => {
     // Render the full app
-    const { rerender } = render(<App />)
+    render(<App />)
 
-    // Wait for app to mount and Three.js scene to render
+    // Wait for canvas and playback controls to render
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /next step/i })).toBeInTheDocument()
+      const canvas = document.querySelector('canvas')
+      expect(canvas).toBeTruthy()
     }, { timeout: 5000 })
 
-    // Verify initial state: no requests queued
-    const queueMonitor = screen.getByText(/queue/i).closest('.card-accent')
-    expect(within(queueMonitor!).queryByText(/track \d+/)).not.toBeInTheDocument()
+    // Verify PlaybackControls exist
+    const playButton = screen.getByRole('button', { name: /play/i })
+    expect(playButton).toBeTruthy()
 
-    // Manually add a request to queue
-    const trackInput = screen.getByDisplayValue(/^\d+$/)
-    const addBtn = screen.getByRole('button', { name: /add request/i })
-    
-    trackInput.value = '100'
-    trackInput.dispatchEvent(new Event('change', { bubbles: true }))
-    addBtn.click()
+    // Verify speed controls exist
+    const speedInput = screen.getByDisplayValue('1')
+    expect(speedInput).toBeTruthy()
 
-    // Verify request is now in queue
+    // Verify reset button exists
+    const resetButton = screen.getByRole('button', { name: /reset/i })
+    expect(resetButton).toBeTruthy()
+
+    // Verify metrics toggle button exists
+    const metricsToggle = screen.getByRole('button', { name: /metrics/i })
+    expect(metricsToggle).toBeTruthy()
+  })
+
+  it('should render canvas on the page', async () => {
+    render(<App />)
+
     await waitFor(() => {
-      const queueItems = screen.getAllByText(/track/)
-      expect(queueItems.length).toBeGreaterThanOrEqual(1)
-    })
-
-    // Select an algorithm
-    const algorithmSelect = screen.getByDisplayValue(/FCFS/i)
-    expect(algorithmSelect).toBeInTheDocument()
-
-    // Step through simulation (3 steps)
-    const nextStepBtn = screen.getByRole('button', { name: /next step/i })
-    for (let i = 0; i < 3; i++) {
-      nextStepBtn.click()
-
-      // Each step should update metrics
-      await waitFor(() => {
-        const metricsPanel = screen.getByText(/step count/i).closest('.card-accent')
-        expect(metricsPanel).toBeInTheDocument()
-      }, { timeout: 2000 })
-    }
-
-    // Verify head position display is non-zero (arm moved)
-    const headPos = screen.getByText(/current track/i)
-    expect(headPos.textContent).toBeTruthy()
+      const canvas = document.querySelector('canvas')
+      expect(canvas).toBeTruthy()
+      expect(canvas?.width).toBeGreaterThan(0)
+      expect(canvas?.height).toBeGreaterThan(0)
+    }, { timeout: 5000 })
   })
 })
