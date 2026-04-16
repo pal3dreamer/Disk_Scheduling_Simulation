@@ -39,14 +39,25 @@ export class FSCANAlgorithm implements DiskAlgorithm {
 
     // End of disk reached - stop scanning and queue requests for next pass
     this.scanning = false
-    this.requestQueue = []
 
     // Add any remaining requests to the main queue for the next scan
-    if (activeQueue.length > 0) {
+    if (activeQueue !== queue && activeQueue.length > 0) {
       queue.push(...activeQueue)
     }
+    this.requestQueue = []
 
-    return null
+    if (queue.length === 0) return null;
+
+    const newDirection = state.headDirection === 1 ? -1 : 1
+    if (newDirection === 1) {
+      return queue.reduce((closest, current) =>
+        current.track < closest.track ? current : closest
+      )
+    } else {
+      return queue.reduce((closest, current) =>
+        current.track > closest.track ? current : closest
+      )
+    }
   }
 
   nextMovement(state: SimulationState): { targetTrack: number; reason: string } {

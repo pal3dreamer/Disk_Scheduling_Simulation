@@ -293,13 +293,14 @@ export const TimelineVisualizerV2: React.FC = () => {
               });
               
               // Run to completion
-              while (true) {
+              let safeLoopCount = 0;
+              while (safeLoopCount < 100000) {
+                safeLoopCount++;
                 const s = engine.getState();
-                if (s.requestQueue.length === 0 && !s.activeRequest && s.completedRequests.length > 0) break;
+                if (s.requestQueue.length === 0 && !s.activeRequest) break;
                 if (s.requestQueue.length > 0 || s.activeRequest) {
                   engine.step();
                 }
-                // No artificial delay needed for background comparison calculation
               }
               
               // Save results
