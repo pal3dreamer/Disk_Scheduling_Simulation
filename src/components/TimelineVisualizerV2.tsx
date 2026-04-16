@@ -113,8 +113,6 @@ export const TimelineVisualizerV2: React.FC = () => {
         return `${state.algorithm} moving forward wrap - selected track ${selectedTrack}`;
       case 'FSCAN':
         return `FSCAN frozen queue - selected track ${selectedTrack} during scan`;
-      case 'Deadline':
-        return `Deadline - serving track ${selectedTrack} with earliest deadline`;
       default:
         return `Selected track ${selectedTrack}`;
     }
@@ -234,7 +232,7 @@ export const TimelineVisualizerV2: React.FC = () => {
           
           {/* Algorithm Switcher */}
           <div className="flex gap-2">
-            {(['FCFS', 'SSTF', 'SCAN', 'C-SCAN', 'LOOK', 'C-LOOK', 'FSCAN', 'Deadline'] as Algorithm[]).map((algo) => (
+            {(['FCFS', 'SSTF', 'SCAN', 'C-SCAN', 'LOOK', 'C-LOOK', 'FSCAN'] as Algorithm[]).map((algo) => (
               <button
                 key={algo}
                 onClick={() => handleAlgorithmChange(algo)}
@@ -283,7 +281,7 @@ export const TimelineVisualizerV2: React.FC = () => {
 
         <button
           onClick={async () => {
-            const algos: Algorithm[] = ['FCFS', 'SSTF', 'SCAN', 'C-SCAN', 'LOOK', 'C-LOOK', 'FSCAN', 'Deadline'];
+            const algos: Algorithm[] = ['FCFS', 'SSTF', 'SCAN', 'C-SCAN', 'LOOK', 'C-LOOK', 'FSCAN'];
             
             for (const algo of algos) {
               engine.reset();

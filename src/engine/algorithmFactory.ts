@@ -5,7 +5,6 @@ import { CSCANAlgorithm } from './algorithms/cscan'
 import { LOOKAlgorithm } from './algorithms/look'
 import { CLOOKAlgorithm } from './algorithms/clook'
 import { FSCANAlgorithm } from './algorithms/fscan'
-import { DeadlineAlgorithm } from './algorithms/deadline'
 import type { Algorithm, DiskAlgorithm } from './types'
 
 export function getAlgorithm(algorithm: Algorithm): DiskAlgorithm {
@@ -24,8 +23,6 @@ export function getAlgorithm(algorithm: Algorithm): DiskAlgorithm {
       return new CLOOKAlgorithm()
     case 'FSCAN':
       return new FSCANAlgorithm()
-    case 'Deadline':
-      return new DeadlineAlgorithm()
   }
 }
 
@@ -38,6 +35,5 @@ export function getAllAlgorithms(): DiskAlgorithm[] {
     new LOOKAlgorithm(),
     new CLOOKAlgorithm(),
     new FSCANAlgorithm(),
-    new DeadlineAlgorithm(),
   ]
 }

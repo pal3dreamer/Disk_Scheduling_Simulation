@@ -1,4 +1,4 @@
-export type Algorithm = 'FCFS' | 'SSTF' | 'SCAN' | 'C-SCAN' | 'LOOK' | 'C-LOOK' | 'FSCAN' | 'Deadline'
+export type Algorithm = 'FCFS' | 'SSTF' | 'SCAN' | 'C-SCAN' | 'LOOK' | 'C-LOOK' | 'FSCAN'
 export type EventType = 
   | 'HEAD_MOVED'
   | 'PLATTER_ROTATED'
