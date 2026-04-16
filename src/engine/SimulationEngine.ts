@@ -67,10 +67,22 @@ export class SimulationEngine {
     if (this.state.headPosition >= size) {
       this.state.headPosition = 0
     }
+    this.emit({
+      type: 'CONFIG_CHANGED',
+      payload: { diskSize: size },
+      duration: 0,
+      timestamp: this.state.currentTime,
+    })
   }
 
   setHeadPosition(position: number): void {
     this.state.headPosition = Math.max(0, Math.min(position, this.state.diskSize - 1))
+    this.emit({
+      type: 'CONFIG_CHANGED',
+      payload: { headPosition: this.state.headPosition },
+      duration: 0,
+      timestamp: this.state.currentTime,
+    })
   }
 
   addRequests(tracks: number[]): void {

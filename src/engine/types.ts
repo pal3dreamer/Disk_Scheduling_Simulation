@@ -7,6 +7,7 @@ export type EventType =
   | 'REQUEST_COMPLETED'
   | 'ALGORITHM_CHANGED'
   | 'STEP_COMPLETE'
+  | 'CONFIG_CHANGED'
 
 export interface SimulationState {
   // Configuration
