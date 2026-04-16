@@ -22,6 +22,7 @@ export const TimelineVisualizerV2: React.FC = () => {
   const queuedRequestsRef = useRef<Array<{id: string, track: number}>>([]);
   const comparisonRef = useRef<HTMLDivElement>(null);
   const [algoResults, setAlgoResults] = useState<Record<string, {totalSeek: number, avgSeek: number, steps: number, completed: number}>>({}); // Store for replay
+  const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
     if (Object.keys(algoResults).length > 0 && comparisonRef.current) {
@@ -505,10 +506,25 @@ export const TimelineVisualizerV2: React.FC = () => {
       {/* Main Timeline Container */}
       <div className="flex-1 shrink-0 min-h-[350px] px-8 pb-8 overflow-hidden">
         {/* Enhanced Container - Graph Hero */}
-        <div className="rounded-xl p-1 h-full flex flex-col" style={{
-          background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.6) 100%)',
-          boxShadow: '0 0 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(59,130,246,0.05)'
-        }}>
+        <div className={
+          isMaximized 
+            ? "fixed inset-4 z-50 rounded-xl p-2 flex flex-col backdrop-blur-xl border border-slate-700/50 shadow-2xl" 
+            : "relative rounded-xl p-1 h-full flex flex-col"
+          } 
+          style={isMaximized ? {
+            background: 'linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 100%)',
+          } : {
+            background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.6) 100%)',
+            boxShadow: '0 0 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(59,130,246,0.05)'
+          }}
+        >
+          <button 
+            onClick={() => setIsMaximized(!isMaximized)}
+            className="absolute top-4 right-6 z-10 px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded text-sm font-medium border border-slate-600 shadow-lg transition-colors flex items-center gap-2 backdrop-blur-sm"
+          >
+            {isMaximized ? '⤓ Minimize' : '⤢ Maximize'}
+          </button>
+
           {/* Scrollable SVG Container */}
           <div
             ref={svgContainerRef}
