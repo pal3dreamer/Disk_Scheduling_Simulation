@@ -20,7 +20,14 @@ export const TimelineVisualizerV2: React.FC = () => {
   const headTrailRef = useRef<HeadTrailEntry[]>([]);
   const prevStepRef = useRef(0);
   const queuedRequestsRef = useRef<Array<{id: string, track: number}>>([]);
+  const comparisonRef = useRef<HTMLDivElement>(null);
   const [algoResults, setAlgoResults] = useState<Record<string, {totalSeek: number, avgSeek: number, steps: number, completed: number}>>({}); // Store for replay
+
+  useEffect(() => {
+    if (Object.keys(algoResults).length > 0 && comparisonRef.current) {
+      comparisonRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [algoResults]);
 
   // Visual constants - auto-scale based on data
   const allTracks = useMemo(() => [
@@ -217,7 +224,7 @@ export const TimelineVisualizerV2: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col" style={{background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%)'}}>
+    <div className="w-full min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%)'}}>
       {/* Header */}
       <div className="px-8 pt-8 pb-4">
         <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">Disk Scheduling</h1>
@@ -497,7 +504,7 @@ export const TimelineVisualizerV2: React.FC = () => {
       </div>
 
       {/* Main Timeline Container */}
-      <div className="flex-1 px-8 pb-8 overflow-hidden">
+      <div className="flex-1 min-h-[500px] px-8 pb-8 overflow-hidden">
         {/* Enhanced Container - Graph Hero */}
         <div className="rounded-xl p-1 h-full flex flex-col" style={{
           background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.6) 100%)',
@@ -775,7 +782,7 @@ export const TimelineVisualizerV2: React.FC = () => {
 
       {/* Comparison Table */}
       {Object.keys(algoResults).length > 0 && (
-        <div className="px-8 pb-8">
+        <div ref={comparisonRef} className="px-8 pb-8 mt-4">
           <div className="rounded-xl p-4" style={{
             background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.6) 100%)',
             boxShadow: '0 0 40px rgba(0,0,0,0.5)'
