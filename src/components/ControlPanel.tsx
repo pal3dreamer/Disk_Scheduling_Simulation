@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSimulation } from './SimulationProvider';
 import { Algorithm } from '@/engine/types';
 import { PresetScenarios } from './PresetScenarios';
@@ -26,21 +26,21 @@ export const AlgorithmSelector: React.FC = () => {
   return (
     <div data-testid="algorithm-selector-container" className="card-accent p-4">
       <div className="flex flex-col space-y-3">
-        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
-          Disk Scheduling Algorithm
+        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          Scheduling Algorithm
         </h3>
 
-        <div className="flex items-center space-x-4">
-          <div data-testid="current-algorithm" className="text-xl font-mono text-gray-200 font-bold">
+        <div className="flex items-center justify-between">
+          <div data-testid="current-algorithm" className="text-xl font-mono text-cyan-400 font-bold">
             {currentAlgorithm}
           </div>
 
           <div className="relative">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="btn-industrial px-4 py-2 text-sm"
+              className="btn-industrial px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 border-slate-700"
             >
-              Choose Algorithm
+              Change
             </button>
 
             {isOpen && (
@@ -79,16 +79,16 @@ export const DiskConfig: React.FC = () => {
   return (
     <div data-testid="disk-config-container" className="card-accent p-4">
       <div className="flex flex-col space-y-4">
-        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
+        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
           Disk Configuration
         </h3>
 
         {/* Disk Size Slider */}
         <div className="flex flex-col space-y-2">
           <div className="flex justify-between items-center">
-            <label className="text-xs text-gray-300 font-medium">Disk Size (tracks)</label>
-            <span data-testid="disk-size-value" className="text-xs font-mono text-amber-400">
-              {state.diskSize}
+            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Disk Size</label>
+            <span data-testid="disk-size-value" className="text-xs font-mono text-cyan-400">
+              {state.diskSize} tracks
             </span>
           </div>
           <input
@@ -106,8 +106,8 @@ export const DiskConfig: React.FC = () => {
         {/* RPM Slider */}
         <div className="flex flex-col space-y-2">
           <div className="flex justify-between items-center">
-            <label className="text-xs text-gray-300 font-medium">Platter RPM</label>
-            <span data-testid="rpm-value" className="text-xs font-mono text-amber-400">
+            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Platter RPM</label>
+            <span data-testid="rpm-value" className="text-xs font-mono text-cyan-400">
               {state.platterRPM}
             </span>
           </div>
@@ -119,7 +119,7 @@ export const DiskConfig: React.FC = () => {
             step="600"
             value={state.platterRPM}
             onChange={() => {}} // Disabled - config immutable
-            className="w-full cursor-pointer"
+            className="w-full cursor-pointer opacity-50"
             disabled
           />
         </div>
@@ -127,9 +127,9 @@ export const DiskConfig: React.FC = () => {
         {/* Seek Time Slider */}
         <div className="flex flex-col space-y-2">
           <div className="flex justify-between items-center">
-            <label className="text-xs text-gray-300 font-medium">Seek Time (ms/track)</label>
-            <span data-testid="seek-time-value" className="text-xs font-mono text-amber-400">
-              {state.trackSeekTime.toFixed(2)}
+            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Seek Time</label>
+            <span data-testid="seek-time-value" className="text-xs font-mono text-cyan-400">
+              {state.trackSeekTime.toFixed(2)} ms/track
             </span>
           </div>
           <input
@@ -140,7 +140,7 @@ export const DiskConfig: React.FC = () => {
             step="0.05"
             value={state.trackSeekTime}
             onChange={() => {}} // Disabled - config immutable
-            className="w-full cursor-pointer"
+            className="w-full cursor-pointer opacity-50"
             disabled
           />
         </div>
@@ -155,19 +155,42 @@ export const DiskConfig: React.FC = () => {
 export const PlaybackControls: React.FC = () => {
   const { engine, state } = useSimulation();
   const [requestTrack, setRequestTrack] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [status, setStatus] = useState<{ message: string; type: 'error' | 'info' | null }>({
+    message: '',
+    type: null,
+  });
+
+  // Play loop
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isPlaying && (state.requestQueue.length > 0 || state.activeRequest)) {
+      timer = setTimeout(async () => {
+        try {
+          await engine.step();
+        } catch (err) {
+          setIsPlaying(false);
+          setStatus({ message: err instanceof Error ? err.message : 'Simulation error', type: 'error' });
+        }
+      }, 100);
+    } else if (isPlaying) {
+      setIsPlaying(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isPlaying, state.requestQueue.length, state.activeRequest, engine]);
 
   const handleNextStep = async () => {
     try {
-      console.log('Next Step clicked, queue length:', state.requestQueue.length, 'active:', state.activeRequest?.track);
+      setStatus({ message: '', type: null });
       await engine.step();
-      console.log('Step completed, new position:', state.headPosition);
     } catch (error) {
-      console.error('Error during step:', error);
-      alert('Error: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setStatus({ message: error instanceof Error ? error.message : 'Unknown error', type: 'error' });
     }
   };
 
   const handleReset = () => {
+    setIsPlaying(false);
+    setStatus({ message: '', type: null });
     engine.reset();
   };
 
@@ -179,12 +202,14 @@ export const PlaybackControls: React.FC = () => {
     }
 
     if (track < 0 || track >= state.diskSize) {
+      setStatus({ message: `Track must be between 0 and ${state.diskSize - 1}`, type: 'error' });
       return;
     }
 
-    const requestId = `req-${state.currentTime}-${Math.random()}`;
+    const requestId = `req-${state.currentTime.toFixed(0)}-${Math.floor(Math.random() * 1000)}`;
     engine.queueRequest({ id: requestId, track, arrivalTime: state.currentTime });
     setRequestTrack('');
+    setStatus({ message: '', type: null });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -196,23 +221,42 @@ export const PlaybackControls: React.FC = () => {
   return (
     <div data-testid="playback-controls-container" className="card-accent p-4">
       <div className="flex flex-col space-y-4">
-        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
+        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
           Playback Control
         </h3>
 
+        {/* Status Message */}
+        {status.type && (
+          <div className={`text-[10px] px-2 py-1 rounded font-mono ${
+            status.type === 'error' ? 'bg-red-900/40 text-red-400 border border-red-800' : 'bg-blue-900/40 text-blue-400 border border-blue-800'
+          }`}>
+            {status.message}
+          </div>
+        )}
+
         {/* Step Control */}
-        <div className="flex space-x-2">
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            data-testid="btn-play-pause"
+            onClick={() => setIsPlaying(!isPlaying)}
+            className={`btn-industrial px-2 py-2 text-xs font-bold uppercase tracking-wider ${
+              isPlaying ? 'bg-amber-600 text-black border-amber-500' : 'bg-slate-800'
+            }`}
+          >
+            {isPlaying ? 'Pause' : 'Play'}
+          </button>
           <button
             data-testid="btn-next-step"
             onClick={handleNextStep}
-            className="btn-industrial px-4 py-2 text-sm flex-1"
+            disabled={isPlaying}
+            className="btn-industrial px-2 py-2 text-xs font-bold uppercase tracking-wider disabled:opacity-30"
           >
-            Next Step
+            Step
           </button>
           <button
             data-testid="btn-reset"
             onClick={handleReset}
-            className="btn-industrial px-4 py-2 text-sm flex-1 bg-red-900 hover:bg-red-800"
+            className="btn-industrial px-2 py-2 text-xs font-bold uppercase tracking-wider bg-red-900/20 hover:bg-red-900/40 border-red-900/50 text-red-400"
           >
             Reset
           </button>
@@ -220,7 +264,7 @@ export const PlaybackControls: React.FC = () => {
 
         {/* Add Request */}
         <div className="flex flex-col space-y-2">
-          <label className="text-xs text-gray-300 font-medium">Queue Request (track #)</label>
+          <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Queue Request</label>
           <div className="flex space-x-2">
             <input
               data-testid="input-request-track"
@@ -230,22 +274,18 @@ export const PlaybackControls: React.FC = () => {
               value={requestTrack}
               onChange={(e) => setRequestTrack(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={`0-${state.diskSize - 1}`}
-              className="flex-1 px-3 py-2 bg-gray-800 border border-amber-600 text-gray-200 text-sm focus:outline-none focus:border-amber-400"
+              placeholder={`Track 0-${state.diskSize - 1}`}
+              className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 text-cyan-400 text-xs font-mono focus:outline-none focus:border-cyan-500 transition-colors"
             />
             <button
               data-testid="btn-add-request"
               onClick={handleAddRequest}
-              className="btn-industrial px-4 py-2 text-sm"
+              className="btn-industrial px-3 py-1.5 text-xs font-bold"
             >
-              Add Request
+              Add
             </button>
           </div>
         </div>
-
-        <p className="text-xs text-gray-500 italic">
-          {state.requestQueue.length} request(s) queued • {state.completedRequests.length} completed
-        </p>
       </div>
     </div>
   );
@@ -257,21 +297,21 @@ export const QueueMonitor: React.FC = () => {
     <div data-testid="queue-monitor-container" className="card-accent p-4 grid grid-cols-2 gap-4">
       {/* Pending Queue */}
       <div className="flex flex-col space-y-3">
-        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
-          Pending Requests
+        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          Pending
         </h3>
-        <div data-testid="pending-queue-list" className="flex flex-col space-y-2 max-h-48 overflow-y-auto">
+        <div data-testid="pending-queue-list" className="flex flex-col space-y-1.5 max-h-48 overflow-y-auto pr-1">
           {state.requestQueue.length === 0 ? (
-            <p className="text-xs text-gray-500 italic">Queue empty</p>
+            <p className="text-[10px] text-slate-600 italic">Queue empty</p>
           ) : (
             state.requestQueue.map((req) => (
               <div
                 key={req.id}
                 data-testid={`queue-item-${req.id}`}
-                className="px-3 py-2 bg-gray-800 border-l-2 border-amber-500 text-gray-300 text-xs font-mono"
+                className="px-2 py-1.5 bg-slate-900/50 border-l-2 border-slate-600 text-slate-300 text-[10px] font-mono flex justify-between items-center"
               >
-                <div>Track: {req.track}</div>
-                <div className="text-gray-500">ID: {req.id}</div>
+                <span>Track {req.track}</span>
+                <span className="text-slate-600 text-[8px] uppercase">{req.id.split('-')[0]}</span>
               </div>
             ))
           )}
@@ -280,18 +320,21 @@ export const QueueMonitor: React.FC = () => {
 
       {/* Active Request */}
       <div className="flex flex-col space-y-3">
-        <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
-          Active Request
+        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          Active
         </h3>
-        <div data-testid="active-request-display" className="px-3 py-4 bg-gray-800 border-l-2 border-green-500">
+        <div data-testid="active-request-display" className="px-3 py-4 bg-slate-900 border-l-2 border-cyan-500 rounded">
           {state.activeRequest ? (
-            <div className="text-xs font-mono space-y-1">
-              <div className="text-green-400 font-bold">ACTIVE</div>
-              <div className="text-gray-300">Track: {state.activeRequest.track}</div>
-              <div className="text-gray-500">ID: {state.activeRequest.id}</div>
+            <div className="text-[10px] font-mono space-y-1">
+              <div className="text-cyan-400 font-bold flex items-center">
+                <span className="status-active mr-2"></span>
+                PROCESSING
+              </div>
+              <div className="text-slate-200">Track: {state.activeRequest.track}</div>
+              <div className="text-slate-600 text-[8px]">ID: {state.activeRequest.id}</div>
             </div>
           ) : (
-            <p className="text-xs text-gray-500 italic">None</p>
+            <p className="text-[10px] text-slate-600 italic">Idle</p>
           )}
         </div>
       </div>

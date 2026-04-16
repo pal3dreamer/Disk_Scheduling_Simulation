@@ -25,13 +25,13 @@ export const AggregateStats: React.FC = () => {
     unit?: string;
     testId: string;
   }> = ({ title, value, unit = '', testId }) => (
-    <div data-testid={testId} className="card-accent p-4 flex flex-col space-y-2">
-      <h4 className="text-xs text-gray-400 uppercase tracking-wide font-medium">
+    <div data-testid={testId} className="card-accent p-3 flex flex-col space-y-1">
+      <h4 className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
         {title}
       </h4>
-      <p className="text-2xl font-mono text-amber-400 font-bold">
+      <p className="text-xl font-mono text-cyan-400 font-bold">
         <span data-testid={`${testId}-value`}>{value}</span>
-        {unit && <span className="text-sm ml-1">{unit}</span>}
+        {unit && <span className="text-[10px] ml-1 text-slate-500 font-normal">{unit}</span>}
       </p>
     </div>
   );
@@ -39,7 +39,7 @@ export const AggregateStats: React.FC = () => {
   return (
     <div
       data-testid="aggregate-stats-container"
-      className="grid grid-cols-2 gap-4 md:grid-cols-4"
+      className="grid grid-cols-2 gap-3"
     >
       <StatCard
         title="Total Seek Time"
@@ -128,119 +128,48 @@ export const PerRequestMetrics: React.FC = () => {
 
   if (state.completedRequests.length === 0) {
     return (
-      <div data-testid="empty-state" className="text-center py-8">
-        <p className="text-sm text-gray-400">No requests completed yet</p>
+      <div data-testid="empty-state" className="text-center py-4 border border-dashed border-slate-800 rounded">
+        <p className="text-[10px] text-slate-500 italic">No requests completed yet</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table data-testid="per-request-metrics-table" className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-amber-600">
-            <th className="px-4 py-2 text-left text-amber-500 font-semibold">
-              <button
-                data-testid="sort-header-id"
-                onClick={() => handleSort('id')}
-                data-sorted={sortColumn === 'id'}
-                className="hover:text-amber-400 cursor-pointer"
-              >
-                Request ID
-              </button>
-            </th>
-            <th className="px-4 py-2 text-left text-amber-500 font-semibold">
-              <button
-                data-testid="sort-header-Track"
-                onClick={() => handleSort('track')}
-                data-sorted={sortColumn === 'track'}
-                className="hover:text-amber-400 cursor-pointer"
-              >
-                Track
-              </button>
-            </th>
-            <th className="px-4 py-2 text-left text-amber-500 font-semibold">
-              <button
-                data-testid="sort-header-Arrival"
-                onClick={() => handleSort('arrival')}
-                data-sorted={sortColumn === 'arrival'}
-                className="hover:text-amber-400 cursor-pointer"
-              >
-                Arrival
-              </button>
-            </th>
-            <th className="px-4 py-2 text-left text-amber-500 font-semibold">
-              <button
-                data-testid="sort-header-Start"
-                onClick={() => handleSort('start')}
-                data-sorted={sortColumn === 'start'}
-                className="hover:text-amber-400 cursor-pointer"
-              >
-                Start
-              </button>
-            </th>
-            <th className="px-4 py-2 text-left text-amber-500 font-semibold">
-              <button
-                data-testid="sort-header-Complete"
-                onClick={() => handleSort('complete')}
-                data-sorted={sortColumn === 'complete'}
-                className="hover:text-amber-400 cursor-pointer"
-              >
-                Complete
-              </button>
-            </th>
-            <th className="px-4 py-2 text-left text-amber-500 font-semibold">
-              <button
-                data-testid="sort-header-WaitTime"
-                onClick={() => handleSort('waitTime')}
-                data-sorted={sortColumn === 'waitTime'}
-                className="hover:text-amber-400 cursor-pointer"
-              >
-                Wait Time
-              </button>
-            </th>
-            <th className="px-4 py-2 text-left text-amber-500 font-semibold">
-              <button
-                data-testid="sort-header-ServiceTime"
-                onClick={() => handleSort('serviceTime')}
-                data-sorted={sortColumn === 'serviceTime'}
-                className="hover:text-amber-400 cursor-pointer"
-              >
-                Service Time
-              </button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedRequests.map((req, idx) => {
-            const waitTime = (req.startTime || 0) - req.arrivalTime;
-            const serviceTime = (req.completionTime || 0) - (req.startTime || 0);
-            return (
-              <tr
-                key={req.id}
-                data-testid={`request-row-${req.id}`}
-                className={`border-b border-gray-700 hover:bg-gray-800 ${
-                  idx % 2 === 0 ? 'bg-gray-900' : 'bg-gray-800'
-                }`}
-              >
-                <td className="px-4 py-2 text-gray-300 font-mono text-xs">{req.id}</td>
-                <td className="px-4 py-2 text-gray-300 font-mono">{req.track}</td>
-                <td className="px-4 py-2 text-gray-300 font-mono">
-                  {req.arrivalTime.toFixed(1)}
-                </td>
-                <td className="px-4 py-2 text-gray-300 font-mono">
-                  {(req.startTime || 0).toFixed(1)}
-                </td>
-                <td className="px-4 py-2 text-gray-300 font-mono">
-                  {(req.completionTime || 0).toFixed(1)}
-                </td>
-                <td className="px-4 py-2 text-green-400 font-mono">{waitTime.toFixed(1)}</td>
-                <td className="px-4 py-2 text-blue-400 font-mono">{serviceTime.toFixed(1)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="flex flex-col space-y-2">
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Completed Requests</span>
+        <div className="flex space-x-2">
+           <button onClick={() => handleSort('track')} className={`text-[8px] uppercase font-bold ${sortColumn === 'track' ? 'text-cyan-400' : 'text-slate-600'}`}>Track</button>
+           <button onClick={() => handleSort('waitTime')} className={`text-[8px] uppercase font-bold ${sortColumn === 'waitTime' ? 'text-cyan-400' : 'text-slate-600'}`}>Wait</button>
+        </div>
+      </div>
+      <div className="flex flex-col space-y-2 max-h-64 overflow-y-auto pr-1">
+        {sortedRequests.map((req) => {
+          const waitTime = (req.startTime || 0) - req.arrivalTime;
+          return (
+            <div
+              key={req.id}
+              data-testid={`request-row-${req.id}`}
+              className="px-3 py-2 bg-slate-900 border border-slate-800 rounded flex justify-between items-center group hover:border-slate-600 transition-colors"
+            >
+              <div className="flex flex-col">
+                <span className="text-xs font-mono text-slate-200">Track {req.track}</span>
+                <span className="text-[8px] text-slate-600 uppercase font-mono">{req.id.split('-')[0]}</span>
+              </div>
+              <div className="flex space-x-4 text-right">
+                <div className="flex flex-col">
+                  <span className="text-[8px] text-slate-500 uppercase font-bold">Wait</span>
+                  <span className="text-[10px] font-mono text-green-400">{waitTime.toFixed(1)}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] text-slate-500 uppercase font-bold">Time</span>
+                  <span className="text-[10px] font-mono text-blue-400">{req.completionTime?.toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -252,10 +181,10 @@ export const MetricsPanel: React.FC = () => {
   return (
     <div
       data-testid="metrics-panel-container"
-      className="w-full bg-gray-900 border-t border-amber-600 p-6"
+      className="w-full bg-slate-900 border-t border-slate-700 p-6 mt-auto"
     >
       <div className="flex flex-col space-y-6">
-        <h2 className="text-lg font-semibold text-amber-500 uppercase tracking-wider">
+        <h2 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">
           Simulation Metrics
         </h2>
 

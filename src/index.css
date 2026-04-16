@@ -116,10 +116,23 @@ body {
   @apply bg-red-500 animate-pulse;
 }
 
+/* Card with top border accent - Refined layout */
+.card-accent {
+  @apply bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden transition-all duration-300;
+  @apply border-t-2 border-t-amber-500/80;
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.4);
+}
+
+.card-accent:hover {
+  @apply border-slate-600/50 border-t-amber-400;
+  box-shadow: 0 8px 30px -5px rgba(0, 0, 0, 0.6);
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
-  @apply w-2;
+  @apply w-1.5;
 }
+
 
 ::-webkit-scrollbar-track {
   @apply bg-slate-900;
