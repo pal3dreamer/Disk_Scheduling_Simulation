@@ -7,6 +7,8 @@ export const algorithmColors: Record<Algorithm, string> = {
   'C-SCAN': '#f97316',  // Orange
   'LOOK': '#06b6d4',    // Cyan
   'C-LOOK': '#ec4899',  // Pink
+  'FSCAN': '#ef4444',   // Red
+  'Deadline': '#84cc16', // Lime
 };
 
 export const uiColors = {

@@ -1,4 +1,4 @@
-export type Algorithm = 'FCFS' | 'SSTF' | 'SCAN' | 'C-SCAN' | 'LOOK' | 'C-LOOK'
+export type Algorithm = 'FCFS' | 'SSTF' | 'SCAN' | 'C-SCAN' | 'LOOK' | 'C-LOOK' | 'FSCAN' | 'Deadline'
 export type EventType = 
   | 'HEAD_MOVED'
   | 'PLATTER_ROTATED'
@@ -53,4 +53,5 @@ export interface DiskAlgorithm {
   nextMovement(state: SimulationState): { targetTrack: number; reason: string }
   getName(): string
   getDescription(): string
+  reset?(): void
 }

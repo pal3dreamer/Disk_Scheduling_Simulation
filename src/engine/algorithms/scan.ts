@@ -24,14 +24,15 @@ export class SCANAlgorithm implements DiskAlgorithm {
       }
     }
 
-    // No requests in current direction; reverse
-    if (state.headDirection === 1) {
-      return queue.reduce((farthest, current) =>
-        current.track < farthest.track ? current : farthest
+    // No requests in current direction; reverse direction and find closest in new direction
+    const newDirection = state.headDirection === 1 ? -1 : 1
+    if (newDirection === 1) {
+      return queue.reduce((closest, current) =>
+        current.track < closest.track ? current : closest
       )
     } else {
-      return queue.reduce((farthest, current) =>
-        current.track > farthest.track ? current : farthest
+      return queue.reduce((closest, current) =>
+        current.track > closest.track ? current : closest
       )
     }
   }

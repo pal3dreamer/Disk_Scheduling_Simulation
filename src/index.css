@@ -2,9 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Industrial Design Theme */
+/* Disk Simulator Visuals */
 * {
-  @apply transition-colors duration-200;
+  transition: all 0.2s ease;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes head-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.head-marker-anim {
+  animation: head-pulse 1s ease-in-out infinite;
+}
+
+.trail-glow-path {
+  filter: drop-shadow(0 0 4px currentColor);
 }
 
 html {

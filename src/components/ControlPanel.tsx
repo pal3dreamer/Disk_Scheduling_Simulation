@@ -10,6 +10,8 @@ const algorithmDescriptions: Record<Algorithm, string> = {
   'C-SCAN': 'Circular SCAN: moves in one direction and wraps to the start. More uniform wait times than SCAN.',
   LOOK: 'Like SCAN but stops at the last request, avoiding unnecessary end traversal.',
   'C-LOOK': 'Like C-SCAN but stops at the last request in each direction.',
+  FSCAN: 'Freeze SCAN: freezes queue at start, serves all requests in one direction before reversing.',
+  Deadline: 'Deadline: serves expired requests first, then FCFS. Guarantees max wait time bound.',
 };
 
 export const AlgorithmSelector: React.FC = () => {

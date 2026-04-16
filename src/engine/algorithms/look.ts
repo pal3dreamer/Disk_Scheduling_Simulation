@@ -24,14 +24,15 @@ export class LOOKAlgorithm implements DiskAlgorithm {
       }
     }
 
-    // Reverse direction and pick farthest in new direction
-    if (state.headDirection === 1) {
-      return queue.reduce((farthest, current) =>
-        current.track < farthest.track ? current : farthest
+    // Reverse direction and pick closest in new direction
+    const newDirection = state.headDirection === 1 ? -1 : 1
+    if (newDirection === 1) {
+      return queue.reduce((closest, current) =>
+        current.track < closest.track ? current : closest
       )
     } else {
-      return queue.reduce((farthest, current) =>
-        current.track > farthest.track ? current : farthest
+      return queue.reduce((closest, current) =>
+        current.track > closest.track ? current : closest
       )
     }
   }

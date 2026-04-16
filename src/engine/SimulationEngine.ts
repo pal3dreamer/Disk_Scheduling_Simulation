@@ -62,7 +62,49 @@ export class SimulationEngine {
     })
   }
 
+  setDiskSize(size: number): void {
+    this.state.diskSize = size
+    if (this.state.headPosition >= size) {
+      this.state.headPosition = 0
+    }
+  }
+
+  setHeadPosition(position: number): void {
+    this.state.headPosition = Math.max(0, Math.min(position, this.state.diskSize - 1))
+  }
+
+  addRequests(tracks: number[]): void {
+    tracks.forEach((track) => {
+      this.queueRequest({
+        id: `req-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        track: Math.max(0, Math.min(track, this.state.diskSize - 1)),
+        arrivalTime: this.state.currentTime,
+      })
+    })
+  }
+
+  clearQueue(): void {
+    this.state.requestQueue = []
+    this.state.activeRequest = undefined
+  }
+
+  generateRandomRequests(count: number, maxTrack: number): void {
+    for (let i = 0; i < count; i++) {
+      const track = Math.floor(Math.random() * maxTrack)
+      this.queueRequest({
+        id: `req-${Date.now()}-${i}`,
+        track,
+        arrivalTime: this.state.currentTime,
+      })
+    }
+  }
+
   async step(): Promise<void> {
+    // Don't count steps when idle - this saves us from infinite X movement
+    if (this.state.requestQueue.length === 0 && !this.state.activeRequest) {
+      return
+    }
+
     // If no active request and queue not empty, start new request
     if (!this.state.activeRequest && this.state.requestQueue.length > 0) {
       const algo = getAlgorithm(this.state.algorithm)
@@ -85,6 +127,11 @@ export class SimulationEngine {
     // Move head toward active request
     if (this.state.activeRequest) {
       const targetTrack = this.state.activeRequest.track
+      const direction = targetTrack > this.state.headPosition ? 1 : -1
+
+      // Update direction when moving
+      this.state.headDirection = direction as 1 | -1
+
       const seekTime = calculateSeekTime(
         this.state.headPosition,
         targetTrack,
@@ -93,7 +140,6 @@ export class SimulationEngine {
 
       if (seekTime > 0) {
         // Head movement step
-        const direction = targetTrack > this.state.headPosition ? 1 : -1
         const distance = Math.abs(targetTrack - this.state.headPosition)
         const step = Math.min(1, distance)
         this.state.headPosition += step * direction
