@@ -196,6 +196,7 @@ export const TimelineVisualizerV2: React.FC = () => {
 
   // No auto-scroll during animation - let user scroll manually
 
+  
   const resetSimulation = (algo: Algorithm = state.algorithm) => {
     engine.reset();
     engine.setAlgorithm(algo);
@@ -207,6 +208,36 @@ export const TimelineVisualizerV2: React.FC = () => {
     // Do NOT auto-start - user will press Play manually
   };
 
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (document.activeElement?.tagName === 'INPUT') return;
+
+      switch (e.key) {
+        case ' ':
+          e.preventDefault(); // Prevent page scroll
+          setIsPlaying(prev => !prev);
+          break;
+        case 'r':
+        case 'R':
+          resetSimulation();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setPlaybackSpeed(prev => Math.min(4, prev + 0.25));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setPlaybackSpeed(prev => Math.max(0.25, prev - 0.25));
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [resetSimulation]);
+
   const handleAlgorithmChange = (algo: Algorithm) => {
     // Reset head trail and simulation when changing algorithm
     headTrailRef.current = [];
@@ -217,7 +248,7 @@ export const TimelineVisualizerV2: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col" style={{background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%)'}}>
+    <div className="w-full h-screen bg-slate-950 flex flex-col">
       {/* Header */}
       <div className="px-8 pt-8 pb-4">
         <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">Disk Scheduling</h1>
@@ -231,10 +262,10 @@ export const TimelineVisualizerV2: React.FC = () => {
               <button
                 key={algo}
                 onClick={() => handleAlgorithmChange(algo)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-md font-medium text-sm transition-all ${
                   state.algorithm === algo
-                    ? 'bg-white/20 border border-white/30 text-white'
-                    : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10'
+                    ? 'bg-cyan-900 text-cyan-100 border border-cyan-700'
+                    : 'bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-300'
                 }`}
               >
                 {algo}
@@ -244,252 +275,276 @@ export const TimelineVisualizerV2: React.FC = () => {
         </div>
       </div>
 
-      {/* Playback Controls */}
-      <div className="px-8 pb-4 flex gap-4 items-center flex-wrap">
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className="px-6 py-2 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all font-medium"
-        >
-          {isPlaying ? '⏸ Pause' : '▶ Play'}
-        </button>
+      {/* Grouped Controls Area */}
+      <div className="px-8 pb-4 grid grid-cols-1 lg:grid-cols-4 gap-4">
         
-        <button
-          onClick={() => resetSimulation()}
-          className="px-6 py-2 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all font-medium"
-        >
-          ⟲ Reset
-        </button>
-
-        <button
-          onClick={() => loadPreset()}
-          className="px-6 py-2 bg-amber-500/20 border border-amber-500/30 rounded-lg text-amber-300 hover:bg-amber-500/30 font-medium"
-        >
-          Load Preset
-        </button>
-
-        <button
-          onClick={() => replay()}
-          className="px-6 py-2 bg-purple-500/20 border border-purple-500/30 rounded-lg text-purple-300 hover:bg-purple-500/30 font-medium"
-        >
-          Replay
-        </button>
-
-        <button
-          onClick={async () => {
-            const algos: Algorithm[] = ['FCFS', 'SSTF', 'SCAN', 'C-SCAN', 'LOOK', 'C-LOOK', 'FSCAN', 'Deadline'];
-            
-            for (const algo of algos) {
-              engine.reset();
-              engine.setAlgorithm(algo);
-              queuedRequestsRef.current.forEach(req => {
-                engine.queueRequest({ ...req, arrivalTime: 0 });
-              });
-              
-              // Run to completion
-              while (true) {
-                const s = engine.getState();
-                if (s.requestQueue.length === 0 && !s.activeRequest && s.completedRequests.length > 0) break;
-                if (s.requestQueue.length > 0 || s.activeRequest) {
-                  engine.step();
-                }
-                await new Promise(r => setTimeout(r, 10));
-              }
-              
-              // Save results
-              const s = engine.getState();
-              let totalSeek = 0;
-              let prevTrack = 0;
-              s.completedRequests.forEach(req => {
-                totalSeek += Math.abs(req.track - prevTrack);
-                prevTrack = req.track;
-              });
-              
-              setAlgoResults(prev => ({
-                ...prev,
-                [algo]: {
-                  totalSeek,
-                  avgSeek: s.completedRequests.length > 0 ? totalSeek / s.completedRequests.length : 0,
-                  steps: s.stepCount,
-                  completed: s.completedRequests.length
-                }
-              }));
-            }
-          }}
-          className="px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-lg text-cyan-300 hover:bg-cyan-500/30 font-medium text-sm"
-        >
-          Compare All
-        </button>
-
-        {/* Random Generator */}
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={randomCount}
-            onChange={(e) => setRandomCount(e.target.value)}
-            className="w-16 px-2 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center"
-            placeholder="N"
-          />
-          <button
-            onClick={() => {
-              engine.reset();
-              engine.setAlgorithm(state.algorithm);
-              const count = parseInt(randomCount) || 5;
-              const tracks: Array<{id: string, track: number}> = [];
-              for (let i = 0; i < count; i++) {
-                const track = Math.floor(Math.random() * state.diskSize);
-                tracks.push({ id: `req-${Date.now()}-${i}`, track });
-              }
-              queuedRequestsRef.current = tracks;
-              tracks.forEach(req => {
-                engine.queueRequest({ ...req, arrivalTime: 0 });
-              });
-              setIsPlaying(true);
-            }}
-            className="px-3 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-emerald-300 hover:bg-emerald-500/30 text-sm"
-          >
-            Load Random
-          </button>
-        </div>
-
-        {/* Add Single Request */}
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min="0"
-            max={state.diskSize - 1}
-            value={newRequestTrack}
-            onChange={(e) => setNewRequestTrack(e.target.value)}
-            className="w-20 px-2 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center"
-            placeholder="Track"
-          />
-          <button
-            onClick={() => {
-              const track = parseInt(newRequestTrack);
-              if (!isNaN(track) && track >= 0 && track < state.diskSize) {
-                engine.queueRequest({
-                  id: `req-${Date.now()}`,
-                  track,
-                  arrivalTime: state.currentTime,
-                });
-                setNewRequestTrack('');
-              }
-            }}
-            className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/10 text-sm"
-          >
-            +Add
-          </button>
-        </div>
-
-        {/* Clear Queue */}
-        <button
-          onClick={() => engine.clearQueue()}
-          className="px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 hover:bg-red-500/30 text-sm"
-        >
-          Clear
-        </button>
-
-        {/* Disk Settings */}
-        <div className="flex items-center gap-2 ml-auto">
-          <label className="text-slate-400 text-sm">Disk:</label>
-          <input
-            type="number"
-            min="10"
-            max="500"
-            value={diskSizeInput}
-            onChange={(e) => setDiskSizeInput(e.target.value)}
-            className="w-16 px-2 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center"
-          />
-          <button
-            onClick={() => {
-              const size = parseInt(diskSizeInput);
-              if (!isNaN(size) && size >= 10 && size <= 500) {
-                engine.setDiskSize(size);
-              }
-            }}
-            className="px-2 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/10 text-xs"
-          >
-            Set
-          </button>
-        </div>
-
-        {/* Head Position */}
-        <div className="flex items-center gap-2">
-          <label className="text-slate-400 text-sm">Head:</label>
-          <input
-            type="number"
-            min="0"
-            max={state.diskSize - 1}
-            value={headPositionInput}
-            onChange={(e) => setHeadPositionInput(e.target.value)}
-            className="w-16 px-2 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm text-center"
-          />
-          <button
-            onClick={() => {
-              const pos = parseInt(headPositionInput);
-              if (!isNaN(pos) && pos >= 0 && pos < state.diskSize) {
-                engine.setHeadPosition(pos);
-              }
-            }}
-            className="px-2 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 hover:bg-white/10 text-xs"
-          >
-            Set
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-slate-300 font-medium">Speed:</label>
-          <input
-            type="range"
-            min="0.25"
-            max="4"
-            step="0.25"
-            value={playbackSpeed}
-            onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
-            className="w-32 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer"
-          />
-          <span className="text-slate-400 w-12">{playbackSpeed.toFixed(2)}x</span>
-        </div>
-
-        {/* Request Queue Panel */}
-        <div className="ml-auto flex items-center gap-4">
+        {/* Panel 1: Execution */}
+        <div className="border border-slate-800 bg-slate-900/50 rounded-lg p-4 flex flex-col gap-3">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Playback</div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 text-sm">Queue:</span>
-            <div className="flex flex-wrap gap-1 max-w-xs">
-              {state.requestQueue.slice(0, 8).map((req) => (
-                <span
-                  key={req.id}
-                  className={`px-2 py-1 rounded text-xs font-mono ${
-                    state.activeRequest?.id === req.id
-                      ? 'bg-white/30 text-white'
-                      : 'bg-white/10 text-slate-300'
-                  }`}
-                >
-                  {req.track}
-                </span>
-              ))}
-              {state.requestQueue.length > 8 && (
-                <span className="text-slate-500 text-xs">+{state.requestQueue.length - 8}</span>
-              )}
-            </div>
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="flex-1 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-md font-semibold transition-colors shadow-sm"
+              title="Spacebar to toggle"
+            >
+              {isPlaying ? 'Pause' : 'Play'}
+            </button>
+            <button
+              onClick={() => resetSimulation()}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-md font-medium transition-colors"
+              title="Press 'R' to reset"
+            >
+              Reset
+            </button>
+          </div>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <label className="text-slate-400 text-xs" title="Up/Down arrows to adjust">Speed:</label>
+            <input
+              type="range"
+              min="0.25"
+              max="4"
+              step="0.25"
+              value={playbackSpeed}
+              onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
+              className="flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+            />
+            <span className="text-slate-400 text-xs w-8 text-right">{playbackSpeed.toFixed(2)}x</span>
+          </div>
+        </div>
+
+        {/* Panel 2: Request Queue */}
+        <div className="border border-slate-800 bg-slate-900/50 rounded-lg p-4 flex flex-col gap-3">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex justify-between">
+            <span>Requests</span>
+            <button
+              onClick={() => engine.clearQueue()}
+              className="text-red-400 hover:text-red-300 transition-colors"
+            >
+              Clear All
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              max={state.diskSize - 1}
+              value={newRequestTrack}
+              onChange={(e) => setNewRequestTrack(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const track = parseInt(newRequestTrack);
+                  if (!isNaN(track) && track >= 0 && track < state.diskSize) {
+                    engine.queueRequest({
+                      id: `req-${Date.now()}`,
+                      track,
+                      arrivalTime: state.currentTime,
+                    });
+                    setNewRequestTrack('');
+                  }
+                }
+              }}
+              className="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-md text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
+              placeholder="Track (Enter to add)"
+            />
           </div>
 
-          {/* Algorithm Explanation */}
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="1"
+              max="50"
+              value={randomCount}
+              onChange={(e) => setRandomCount(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  engine.reset();
+                  engine.setAlgorithm(state.algorithm);
+                  const count = parseInt(randomCount) || 5;
+                  const tracks: Array<{id: string, track: number}> = [];
+                  for (let i = 0; i < count; i++) {
+                    const track = Math.floor(Math.random() * state.diskSize);
+                    tracks.push({ id: `req-${Date.now()}-${i}`, track });
+                  }
+                  queuedRequestsRef.current = tracks;
+                  tracks.forEach(req => {
+                    engine.queueRequest({ ...req, arrivalTime: 0 });
+                  });
+                  setIsPlaying(true);
+                }
+              }}
+              className="w-16 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-md text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
+              placeholder="N"
+              title="Number of random requests"
+            />
+            <button
+              onClick={() => {
+                engine.reset();
+                engine.setAlgorithm(state.algorithm);
+                const count = parseInt(randomCount) || 5;
+                const tracks: Array<{id: string, track: number}> = [];
+                for (let i = 0; i < count; i++) {
+                  const track = Math.floor(Math.random() * state.diskSize);
+                  tracks.push({ id: `req-${Date.now()}-${i}`, track });
+                }
+                queuedRequestsRef.current = tracks;
+                tracks.forEach(req => {
+                  engine.queueRequest({ ...req, arrivalTime: 0 });
+                });
+                setIsPlaying(true);
+              }}
+              className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-md text-sm transition-colors"
+            >
+              Random
+            </button>
+          </div>
+        </div>
+
+        {/* Panel 3: Environment */}
+        <div className="border border-slate-800 bg-slate-900/50 rounded-lg p-4 flex flex-col gap-3">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Environment</div>
+          
+          <div className="flex items-center gap-3">
+            <label className="text-slate-400 text-sm w-10">Disk:</label>
+            <input
+              type="number"
+              min="10"
+              max="500"
+              value={diskSizeInput}
+              onChange={(e) => setDiskSizeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const size = parseInt(diskSizeInput);
+                  if (!isNaN(size) && size >= 10 && size <= 500) {
+                    engine.setDiskSize(size);
+                  }
+                }
+              }}
+              className="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-md text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
+              title="Press Enter to apply"
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="text-slate-400 text-sm w-10">Head:</label>
+            <input
+              type="number"
+              min="0"
+              max={state.diskSize - 1}
+              value={headPositionInput}
+              onChange={(e) => setHeadPositionInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const pos = parseInt(headPositionInput);
+                  if (!isNaN(pos) && pos >= 0 && pos < state.diskSize) {
+                    engine.setHeadPosition(pos);
+                  }
+                }
+              }}
+              className="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-md text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"
+              title="Press Enter to apply"
+            />
+          </div>
+        </div>
+
+        {/* Panel 4: Scenarios */}
+        <div className="border border-slate-800 bg-slate-900/50 rounded-lg p-4 flex flex-col gap-3">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Scenarios</div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => loadPreset()}
+              className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-md text-sm transition-colors"
+            >
+              Preset 1
+            </button>
+            <button
+              onClick={() => replay()}
+              className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-md text-sm transition-colors"
+            >
+              Replay Last
+            </button>
+          </div>
+
+          <button
+            onClick={async () => {
+              const algos: Algorithm[] = ['FCFS', 'SSTF', 'SCAN', 'C-SCAN', 'LOOK', 'C-LOOK', 'FSCAN', 'Deadline'];
+              for (const algo of algos) {
+                engine.reset();
+                engine.setAlgorithm(algo);
+                queuedRequestsRef.current.forEach(req => {
+                  engine.queueRequest({ ...req, arrivalTime: 0 });
+                });
+                while (true) {
+                  const s = engine.getState();
+                  if (s.requestQueue.length === 0 && !s.activeRequest && s.completedRequests.length > 0) break;
+                  if (s.requestQueue.length > 0 || s.activeRequest) {
+                    engine.step();
+                  }
+                  await new Promise(r => setTimeout(r, 10));
+                }
+                const s = engine.getState();
+                let totalSeek = 0;
+                let prevTrack = 0;
+                s.completedRequests.forEach(req => {
+                  totalSeek += Math.abs(req.track - prevTrack);
+                  prevTrack = req.track;
+                });
+                setAlgoResults(prev => ({
+                  ...prev,
+                  [algo]: {
+                    totalSeek,
+                    avgSeek: s.completedRequests.length > 0 ? totalSeek / s.completedRequests.length : 0,
+                    steps: s.stepCount,
+                    completed: s.completedRequests.length
+                  }
+                }));
+              }
+            }}
+            className="w-full py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-md text-sm transition-colors"
+          >
+            Compare All Algorithms
+          </button>
+        </div>
+      </div>
+
+      {/* Queue Info Bar */}
+      <div className="px-8 pb-4 flex items-center justify-between text-sm">
+        <div className="flex items-center gap-3">
+          <span className="text-slate-400 font-medium">Queue:</span>
+          <div className="flex flex-wrap gap-1">
+            {state.requestQueue.slice(0, 10).map((req) => (
+              <span
+                key={req.id}
+                className={`px-2 py-0.5 rounded text-xs font-mono ${
+                  state.activeRequest?.id === req.id
+                    ? 'bg-cyan-900 text-cyan-100 border border-cyan-700'
+                    : 'bg-slate-800 text-slate-300 border border-slate-700'
+                }`}
+              >
+                {req.track}
+              </span>
+            ))}
+            {state.requestQueue.length === 0 && (
+              <span className="text-slate-600 italic">Empty</span>
+            )}
+            {state.requestQueue.length > 10 && (
+              <span className="text-slate-500 text-xs">+${state.requestQueue.length - 10}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
           {algorithmExplanation && (
-            <div className="px-3 py-1 rounded-lg bg-slate-800/60 border border-white/10 text-xs text-slate-300 max-w-xs truncate" title={algorithmExplanation}>
+            <div className="px-3 py-1 rounded bg-slate-800 border border-slate-700 text-xs text-slate-300 max-w-md truncate" title={algorithmExplanation}>
               {algorithmExplanation}
             </div>
           )}
-
-          {/* Direction indicator */}
           <div className={`px-2 py-1 rounded text-sm font-medium ${
-            state.headDirection === 1 ? 'text-cyan-400' : 'text-orange-400'
-          }`}>
-            {state.headDirection === 1 ? '→' : '←'}
+            state.headDirection === 1 ? 'text-cyan-400' : 'text-amber-400'
+          }`} title="Head Direction">
+            {state.headDirection === 1 ? '→ Increasing' : '← Decreasing'}
           </div>
-
-          {/* Disk Range */}
           <div className="text-xs text-slate-500">
             [0 - {dynamicDiskSize}]
           </div>
@@ -500,14 +555,14 @@ export const TimelineVisualizerV2: React.FC = () => {
       <div className="flex-1 px-8 pb-8 overflow-hidden">
         {/* Enhanced Container - Graph Hero */}
         <div className="rounded-xl p-1 h-full flex flex-col" style={{
-          background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.6) 100%)',
-          boxShadow: '0 0 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(59,130,246,0.05)'
+          background: '#0f172a',
+          border: '1px solid #1e293b'
         }}>
           {/* Scrollable SVG Container */}
           <div
             ref={svgContainerRef}
             className="flex-1 overflow-scroll rounded-lg"
-            style={{ background: 'rgba(2,6,23,0.6)' }}
+            
           >
             <svg
               width={startX + timelineData.endX + 50}
@@ -737,39 +792,35 @@ export const TimelineVisualizerV2: React.FC = () => {
         </div>
       )}
 
-      {/* Stats Cards - Elevated */}
-      <div className="px-8 pb-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Step</div>
-          <div className="text-2xl font-bold text-white">{state.stepCount}</div>
+      {/* Stats Cards - Clean */}
+      <div className="px-8 pb-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
+          <div className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">State</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-slate-400 text-sm">Step <span className="text-white text-lg font-bold ml-1">{state.stepCount}</span></div>
+            <div className="text-slate-400 text-sm">Head <span className="text-white text-lg font-bold ml-1">{Math.round(state.headPosition)}</span></div>
+          </div>
         </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Head</div>
-          <div className="text-2xl font-bold text-cyan-400">{Math.round(state.headPosition)}</div>
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4" title="Total distance the disk head has traveled">
+          <div className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Seek Distance</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-slate-400 text-sm">Total <span className="text-white text-lg font-bold ml-1">{metrics.totalSeekDistance}</span></div>
+            <div className="text-slate-400 text-sm">Avg <span className="text-white text-lg font-bold ml-1">{metrics.avgSeekDistance}</span></div>
+          </div>
         </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Total Seek</div>
-          <div className="text-2xl font-bold text-blue-400">{metrics.totalSeekDistance}</div>
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4" title="Average time from request arrival to completion">
+          <div className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Time Metrics</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-slate-400 text-sm" title="Turnaround Time">Turnaround <span className="text-white text-lg font-bold ml-1">{metrics.avgTurnaround}</span></div>
+            <div className="text-slate-400 text-sm" title="Waiting Time">Wait <span className="text-white text-lg font-bold ml-1">{metrics.avgWaiting}</span></div>
+          </div>
         </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Avg Seek</div>
-          <div className="text-2xl font-bold text-blue-300">{metrics.avgSeekDistance}</div>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Turnaround</div>
-          <div className="text-2xl font-bold text-emerald-400">{metrics.avgTurnaround}</div>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Waiting</div>
-          <div className="text-2xl font-bold text-amber-400">{metrics.avgWaiting}</div>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Throughput</div>
-          <div className="text-2xl font-bold text-green-400">{metrics.throughput}</div>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 shadow-lg">
-          <div className="text-slate-400 text-xs font-medium mb-1">Done</div>
-          <div className="text-2xl font-bold text-slate-200">{state.completedRequests.length}</div>
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
+          <div className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Progress</div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-slate-400 text-sm">Done <span className="text-white text-lg font-bold ml-1">{state.completedRequests.length}</span></div>
+            <div className="text-slate-400 text-sm">Throughput <span className="text-white text-lg font-bold ml-1">{metrics.throughput}</span></div>
+          </div>
         </div>
       </div>
 
