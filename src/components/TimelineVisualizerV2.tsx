@@ -224,7 +224,7 @@ export const TimelineVisualizerV2: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%)'}}>
+    <div className="w-full h-screen overflow-y-auto flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{background: 'radial-gradient(ellipse at top, #1e293b 0%, #0f172a 50%, #020617 100%)'}}>
       {/* Header */}
       <div className="px-8 pt-8 pb-4">
         <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">Disk Scheduling</h1>
@@ -299,7 +299,7 @@ export const TimelineVisualizerV2: React.FC = () => {
                 if (s.requestQueue.length > 0 || s.activeRequest) {
                   engine.step();
                 }
-                await new Promise(r => setTimeout(r, 10));
+                // No artificial delay needed for background comparison calculation
               }
               
               // Save results
@@ -504,7 +504,7 @@ export const TimelineVisualizerV2: React.FC = () => {
       </div>
 
       {/* Main Timeline Container */}
-      <div className="flex-1 min-h-[500px] px-8 pb-8 overflow-hidden">
+      <div className="flex-1 shrink-0 min-h-[350px] px-8 pb-8 overflow-hidden">
         {/* Enhanced Container - Graph Hero */}
         <div className="rounded-xl p-1 h-full flex flex-col" style={{
           background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.6) 100%)',
